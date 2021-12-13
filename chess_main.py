@@ -1402,11 +1402,11 @@ while running:
                 if promoting[0]:
                     board.promote(promoting[1].pos,promoting[1].color)
                 move = False
-        if event.type == MOUSEBUTTONDOWN and event.button == BUTTON_RIGHT:
+        if event.type == MOUSEBUTTONDOWN and event.button == BUTTON_RIGHT and not menu:
             (y,x)=event.pos
             x = int(x/80)
             y = int(y/80)
-        if event.type == MOUSEBUTTONUP and event.button == BUTTON_RIGHT:
+        if event.type == MOUSEBUTTONUP and event.button == BUTTON_RIGHT and not menu:
             if not piece_raised == 0:
                 piece_raised = 0
                 board.reset()
