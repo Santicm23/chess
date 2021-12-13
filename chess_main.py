@@ -18,7 +18,7 @@ pygame.display.set_icon(icon)
 font = pygame.font.SysFont('Gerbera', 16)
 font2 = pygame.font.SysFont('Gerbera', 40)
 font3 = pygame.font.SysFont('Gerbera', 30)
-chessfont = pygame.font.Font('CASEFONT.TTF', 80
+chessfont = pygame.font.Font('CASEFONT.TTF', 80)
 
 #|   ++++   Colores en RGB   ++++   |#
 
