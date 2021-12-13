@@ -1157,284 +1157,286 @@ while running:
         if event.type == pygame.QUIT:#correcto apagado
             running = False
             sys.exit()
-        if event.type == MOUSEBUTTONDOWN and event.button == BUTTON_LEFT:#click
-            arws = []
-            sqrs = []
-            cnt_arws = 0
-            cnt_sqrs = 0
-            mouse_sq = []
-            mselect = None
-            Pos = event.pos
-            (i,j) = Pos
-            i = int(i/80)
-            j = int(j/80)
-            if piece_raised == 0 and not promoting[0] and not game_over() and not menu:#levantar pieza (1° click)
-                board.reset()
-                if (rotate and fo == noturn) or (not rotate and fo == 1):
-                    (i,j) = (7-i,7-j)
-                if not board.position[j][i] == 0:
-                    psr = piece_raised
-                    piece_raised = board.position[j][i]#saber cual pieza y su posicion
-                    if piece_raised.color == color_turn[noturn]:
-                        piece_raised = 0
-                    if board.position[j][i].color == color_turn[turn]:#saber cuando la pieza este en el aire
-                        piece_raised.rsrch_lm(board)
-            elif not piece_raised == 0 and not promoting[0] and not game_over() and move:#colocar pieza(2° click)
-                (I,J) = (i,j)
-                if (rotate and fo == noturn) or (not rotate and fo == 1):
-                    (i,j) = (7-i,7-j)
-                old_pos = piece_raised.pos
-                if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
-                    piece_raised.move([j,i],board,True)
-                    if piece_raised.type == 1:
+        elif event.type == MOUSEBUTTONDOWN:#click
+            if event.button == BUTTON_LEFT:
+                arws = []
+                sqrs = []
+                cnt_arws = 0
+                cnt_sqrs = 0
+                mouse_sq = []
+                mselect = None
+                Pos = event.pos
+                (i,j) = Pos
+                i = int(i/80)
+                j = int(j/80)
+                if piece_raised == 0 and not promoting[0] and not game_over() and not menu:#levantar pieza (1° click)
+                    board.reset()
+                    if (rotate and fo == noturn) or (not rotate and fo == 1):
+                        (i,j) = (7-i,7-j)
+                    if not board.position[j][i] == 0:
+                        psr = piece_raised
+                        piece_raised = board.position[j][i]#saber cual pieza y su posicion
+                        if piece_raised.color == color_turn[noturn]:
+                            piece_raised = 0
+                        if board.position[j][i].color == color_turn[turn]:#saber cuando la pieza este en el aire
+                            piece_raised.rsrch_lm(board)
+                elif not piece_raised == 0 and not promoting[0] and not game_over() and move:#colocar pieza(2° click)
+                    (I,J) = (i,j)
+                    if (rotate and fo == noturn) or (not rotate and fo == 1):
+                        (i,j) = (7-i,7-j)
+                    old_pos = piece_raised.pos
+                    if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
+                        piece_raised.move([j,i],board,True)
+                        if piece_raised.type == 1:
+                            last_cpm = 0
+                        else:
+                            last_cpm += 1
+                        if turn == 0:
+                            Nmove += 1
+                    elif not board.position[j][i] == 0 or en_passant(piece_raised,[j,i],turn,board):
+                        pcd = board.get_piece(columnes[i],lines[j])
+                        piece_raised.capture([j,i],board,True)
                         last_cpm = 0
-                    else:
-                        last_cpm += 1
-                    if turn == 0:
-                        Nmove += 1
-                elif not board.position[j][i] == 0 or en_passant(piece_raised,[j,i],turn,board):
-                    pcd = board.get_piece(columnes[i],lines[j])
-                    piece_raised.capture([j,i],board,True)
-                    last_cpm = 0
-                    if turn == 0:
-                        Nmove += 1
-                if not old_pos == piece_raised.pos:
-                    nt = orientation
-                    if not promoting[0]:
-                        print(board)
-                        print(repr(board))
-                    if rotate:
-                        orientation = turn
-                        nt = noturn
-                    if piece_raised.type == 1:
-                        if piece_raised.pos[0] == 0:
-                            promoting = [True,piece_raised,pcd,old_pos]
-                        elif piece_raised.pos[0] == 7:
-                            promoting = [True,piece_raised,pcd,old_pos]
+                        if turn == 0:
+                            Nmove += 1
+                    if not old_pos == piece_raised.pos:
+                        nt = orientation
+                        if not promoting[0]:
+                            print(board)
+                            print(repr(board))
+                        if rotate:
+                            orientation = turn
+                            nt = noturn
+                        if piece_raised.type == 1:
+                            if piece_raised.pos[0] == 0:
+                                promoting = [True,piece_raised,pcd,old_pos]
+                            elif piece_raised.pos[0] == 7:
+                                promoting = [True,piece_raised,pcd,old_pos]
+                            else:
+                                board.reset_lm()
                         else:
                             board.reset_lm()
-                    else:
-                        board.reset_lm()
-                    check = board.check(noturn)
-                if game_over() and not promoting[0]:
-                    if check[0]:
-                        if color_turn[noturn] == WHITE:
-                            score[0] = score[0] + 1
-                        elif color_turn[noturn] == BLACK:
-                            score[1] = score[1] + 1
-                    else:
-                        score[0] = score[0] + 0.5
-                        score[1] = score[1] + 0.5
-                if not board.position[j][i] == 0:
-                    if board.get_piece(columnes[i],lines[j]).color == piece_raised.color:
-                        if not board.get_piece(columnes[i],lines[j]) == piece_raised:
-                            board.reset()
-                            piece_raised = board.get_piece(columnes[i],lines[j])
-                            screen.blit(r_sq,(I*80,J*80))
-                            board.get_piece(columnes[i],lines[j]).draw(I*80,J*80)
-                            piece_raised.rsrch_lm(board)
-                            board.show_lm(piece_raised)
-                            pygame.display.update()
+                        check = board.check(noturn)
+                    if game_over() and not promoting[0]:
+                        if check[0]:
+                            if color_turn[noturn] == WHITE:
+                                score[0] = score[0] + 1
+                            elif color_turn[noturn] == BLACK:
+                                score[1] = score[1] + 1
+                        else:
+                            score[0] = score[0] + 0.5
+                            score[1] = score[1] + 0.5
+                    if not board.position[j][i] == 0:
+                        if board.get_piece(columnes[i],lines[j]).color == piece_raised.color:
+                            if not board.get_piece(columnes[i],lines[j]) == piece_raised:
+                                board.reset()
+                                piece_raised = board.get_piece(columnes[i],lines[j])
+                                screen.blit(r_sq,(I*80,J*80))
+                                board.get_piece(columnes[i],lines[j]).draw(I*80,J*80)
+                                piece_raised.rsrch_lm(board)
+                                board.show_lm(piece_raised)
+                                pygame.display.update()
+                            else:
+                                piece_raised = 0
+                                board.reset()
                         else:
                             piece_raised = 0
                             board.reset()
                     else:
                         piece_raised = 0
                         board.reset()
-                else:
-                    piece_raised = 0
+                    if promoting[0]:
+                        board.promote(promoting[1].pos,promoting[1].color)
+                    move = False
+                elif promoting[0]:#solo si se esta coronando un peon(3°click)
+                    pawn = promoting[1]
+                    (r,c) = pawn.pos
+                    (y,x) = promoting[3]
+                    (n1,n2,n3) = (1,2,3)
+                    if (rotate and fo == turn) or (not rotate and fo == 1):
+                        (n1,n2,n3) = (-n1,-n2,-n3)
+                        (r,c) = (7-r,7-c)
+                    if pawn.color == WHITE:
+                        if [j,i] == [r,c]:
+                            pawn.type = 5
+                            pawn.image = Q_img
+                        elif [j,i] == [r+n1,c]:
+                            pawn.type = 2
+                            pawn.image = N_img
+                        elif [j,i] == [r+n2,c]:
+                            pawn.type = 4
+                            pawn.image = R_img
+                        elif [j,i] == [r+n3,c]:
+                            pawn.type = 3
+                            pawn.image = B_img
+                        else:
+                            if not promoting[2] == None:
+                                Bpieces.append(promoting[2])
+                                board.position[r][c] = promoting[2]
+                                pcd = None
+                            else:
+                                board.position[r][c] = 0
+                            board.set_piece(columnes[x],lines[y],pawn)
+                            (turn,noturn)=(0,1)
+                    elif pawn.color == BLACK:
+                        if [j,i] == [r,c]:
+                            pawn.type = 5
+                            pawn.image = q_img
+                        elif [j,i] == [r-n1,c]:
+                            pawn.type = 2
+                            pawn.image = n_img
+                        elif [j,i] == [r-n2,c]:
+                            pawn.type = 4
+                            pawn.image = r_img
+                        elif [j,i] == [r-n3,c]:
+                            pawn.type = 3
+                            pawn.image = b_img
+                        else:
+                            if not promoting[2] == None:
+                                Wpieces.append(promoting[2])
+                                board.position[r][c] = promoting[2]
+                                pcd = None
+                            else:
+                                board.position[r][c] = 0
+                            board.set_piece(columnes[x],lines[y],pawn)
+                            (turn,noturn)=(1,0)
+                    promoting = [False,None,None,None]
+                    board.reset_lm()
                     board.reset()
-                if promoting[0]:
-                    board.promote(promoting[1].pos,promoting[1].color)
-                move = False
-            elif promoting[0]:#solo si se esta coronando un peon(3°click)
-                pawn = promoting[1]
-                (r,c) = pawn.pos
-                (y,x) = promoting[3]
-                (n1,n2,n3) = (1,2,3)
-                if (rotate and fo == turn) or (not rotate and fo == 1):
-                    (n1,n2,n3) = (-n1,-n2,-n3)
-                    (r,c) = (7-r,7-c)
-                if pawn.color == WHITE:
-                    if [j,i] == [r,c]:
-                        pawn.type = 5
-                        pawn.image = Q_img
-                    elif [j,i] == [r+n1,c]:
-                        pawn.type = 2
-                        pawn.image = N_img
-                    elif [j,i] == [r+n2,c]:
-                        pawn.type = 4
-                        pawn.image = R_img
-                    elif [j,i] == [r+n3,c]:
-                        pawn.type = 3
-                        pawn.image = B_img
-                    else:
-                        if not promoting[2] == None:
-                            Bpieces.append(promoting[2])
-                            board.position[r][c] = promoting[2]
-                            pcd = None
-                        else:
-                            board.position[r][c] = 0
-                        board.set_piece(columnes[x],lines[y],pawn)
-                        (turn,noturn)=(0,1)
-                elif pawn.color == BLACK:
-                    if [j,i] == [r,c]:
-                        pawn.type = 5
-                        pawn.image = q_img
-                    elif [j,i] == [r-n1,c]:
-                        pawn.type = 2
-                        pawn.image = n_img
-                    elif [j,i] == [r-n2,c]:
-                        pawn.type = 4
-                        pawn.image = r_img
-                    elif [j,i] == [r-n3,c]:
-                        pawn.type = 3
-                        pawn.image = b_img
-                    else:
-                        if not promoting[2] == None:
-                            Wpieces.append(promoting[2])
-                            board.position[r][c] = promoting[2]
-                            pcd = None
-                        else:
-                            board.position[r][c] = 0
-                        board.set_piece(columnes[x],lines[y],pawn)
-                        (turn,noturn)=(1,0)
-                promoting = [False,None,None,None]
-                board.reset_lm()
-                board.reset()
-                print(board)
-                print(repr(board))
-            elif game_over() and not promoting[0]:#interfaz de fin de juego
+                    print(board)
+                    print(repr(board))
+                elif game_over() and not promoting[0]:#interfaz de fin de juego
+                    (i,j) = Pos
+                    if 190<i and i<310:
+                        if 390<j and j<430:
+                            board.restart()
+                            turn = 0
+                            noturn = 1
+                            board.reset_lm()
+                            board.reset()
+                    elif 330<i and i<450:
+                        if 390<j and j<430:
+                            pygame.quit()
+                            running = False
+                            sys.exit()
+                elif menu:
+                    (i,j) = Pos
+                    if 190<i and i<310:
+                        if 390<j and j<430:
+                            board.restart()
+                            turn = 0
+                            noturn = 1
+                            board.reset_lm()
+                            mode = 0
+                            menu = False
+                            board.reset()
+                    elif 330<i and i<450:
+                        if 390<j and j<430:
+                            board.restart()
+                            turn = 0
+                            noturn = 1
+                            board.reset_lm()
+                            mode = 1
+                            menu = False
+                            change_font()
+                            board.reset()
+            elif event.button == BUTTON_RIGHT and not menu:
+                (y,x)=event.pos
+                x = int(x/80)
+                y = int(y/80)
+        elif event.type == MOUSEBUTTONUP:
+            if event.button == BUTTON_LEFT:
+                Pos = event.pos
                 (i,j) = Pos
-                if 190<i and i<310:
-                    if 390<j and j<430:
-                        board.restart()
-                        turn = 0
-                        noturn = 1
-                        board.reset_lm()
-                        board.reset()
-                elif 330<i and i<450:
-                    if 390<j and j<430:
-                        pygame.quit()
-                        running = False
-                        sys.exit()
-            elif menu:
-                (i,j) = Pos
-                if 190<i and i<310:
-                    if 390<j and j<430:
-                        board.restart()
-                        turn = 0
-                        noturn = 1
-                        board.reset_lm()
-                        mode = 0
-                        menu = False
-                        board.reset()
-                elif 330<i and i<450:
-                    if 390<j and j<430:
-                        board.restart()
-                        turn = 0
-                        noturn = 1
-                        board.reset_lm()
-                        mode = 1
-                        menu = False
-                        change_font()
-                        board.reset()
-        if event.type == MOUSEBUTTONUP and event.button == BUTTON_LEFT:
-            Pos = event.pos
-            (i,j) = Pos
-            i = int(i/80)
-            j = int(j/80)
-            if not piece_raised == 0:
-                (I,J) = (i,j)
-                if (rotate and fo == noturn) or (not rotate and fo == 1):
-                    (i,j) = (7-i,7-j)
-                old_pos = piece_raised.pos
-                if [j,i] == piece_raised.pos:
-                    move = True
-                    board.reset_zone((I,J))
-                    screen.blit(r_sq,(I*80,J*80))
-                    board.get_piece(columnes[i],lines[j]).draw(I*80,J*80)
-                    board.show_lm(piece_raised)
-                    break
-                if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
-                    piece_raised.move([j,i],board,False)
-                    if piece_raised.type == 1:
+                i = int(i/80)
+                j = int(j/80)
+                if not piece_raised == 0:
+                    (I,J) = (i,j)
+                    if (rotate and fo == noturn) or (not rotate and fo == 1):
+                        (i,j) = (7-i,7-j)
+                    old_pos = piece_raised.pos
+                    if [j,i] == piece_raised.pos:
+                        move = True
+                        board.reset_zone((I,J))
+                        screen.blit(r_sq,(I*80,J*80))
+                        board.get_piece(columnes[i],lines[j]).draw(I*80,J*80)
+                        board.show_lm(piece_raised)
+                        break
+                    if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
+                        piece_raised.move([j,i],board,False)
+                        if piece_raised.type == 1:
+                            last_cpm = 0
+                        else:
+                            last_cpm += 1
+                        if turn == 0:
+                            Nmove += 1
+                    elif not board.position[j][i] == 0 or en_passant(piece_raised,[j,i],turn,board):
+                        pcd = board.position[j][i]
+                        piece_raised.capture([j,i],board,False)
                         last_cpm = 0
-                    else:
-                        last_cpm += 1
-                    if turn == 0:
-                        Nmove += 1
-                elif not board.position[j][i] == 0 or en_passant(piece_raised,[j,i],turn,board):
-                    pcd = board.position[j][i]
-                    piece_raised.capture([j,i],board,False)
-                    last_cpm = 0
-                    if turn == 0:
-                        Nmove += 1
-                if not old_pos == piece_raised.pos:
-                    nt = orientation
-                    if not promoting[0]:
-                        print(board)
-                        print(repr(board))
-                    if rotate:
-                        orientation = turn
-                        nt = noturn
-                    if piece_raised.type == 1:
-                        if piece_raised.pos[0] == 0:
-                            promoting = [True,piece_raised,pcd,old_pos]
-                        elif piece_raised.pos[0] == 7:
-                            promoting = [True,piece_raised,pcd,old_pos]
+                        if turn == 0:
+                            Nmove += 1
+                    if not old_pos == piece_raised.pos:
+                        nt = orientation
+                        if not promoting[0]:
+                            print(board)
+                            print(repr(board))
+                        if rotate:
+                            orientation = turn
+                            nt = noturn
+                        if piece_raised.type == 1:
+                            if piece_raised.pos[0] == 0:
+                                promoting = [True,piece_raised,pcd,old_pos]
+                            elif piece_raised.pos[0] == 7:
+                                promoting = [True,piece_raised,pcd,old_pos]
+                            else:
+                                board.reset_lm()
                         else:
                             board.reset_lm()
+                        check = board.check(noturn)
+                    piece_raised = 0
+                    if game_over() and not promoting[0]:
+                        if check[0]:
+                            if color_turn[noturn] == WHITE:
+                                score[0] = score[0] + 1
+                            elif color_turn[noturn] == BLACK:
+                                score[1] = score[1] + 1
+                        else:
+                            score[0] = score[0] + 0.5
+                            score[1] = score[1] + 0.5
+                    board.reset()
+                    if promoting[0]:
+                        board.promote(promoting[1].pos,promoting[1].color)
+                    move = False      
+            elif event.button == BUTTON_RIGHT and not menu:
+                if not piece_raised == 0:
+                    piece_raised = 0
+                    board.reset()
+                (j,i)=event.pos
+                i = int(i/80)
+                j = int(j/80)
+                (i1,j1) = (i,j)
+                if (rotate and fo == noturn) or (not rotate and fo == 1):
+                    (i1,j1) = (7-i,7-j)
+                if (x,y) == (i,j):
+                    if get_sqr((x,y)) == None:
+                        sqr = Squares(RED, (x,y))
+                        sqrs.append(sqr)
+                        sqrs[cnt_sqrs].draw()
+                        cnt_sqrs += 1
+                        reset_draws()
                     else:
-                        board.reset_lm()
-                    check = board.check(noturn)
-                piece_raised = 0
-                if game_over() and not promoting[0]:
-                    if check[0]:
-                        if color_turn[noturn] == WHITE:
-                            score[0] = score[0] + 1
-                        elif color_turn[noturn] == BLACK:
-                            score[1] = score[1] + 1
+                        cnt_sqrs += -1
+                        sqrs.remove(get_sqr((x,y)))
+                        reset_draws()
+                else:
+                    if get_arw((y,x),(j,i)) == None:
+                        arw = Arrows(LGREEN,(y,x),(j,i))
+                        arws.append(arw)
+                        arws[cnt_arws].draw()
+                        cnt_arws += 1
                     else:
-                        score[0] = score[0] + 0.5
-                        score[1] = score[1] + 0.5
-                board.reset()
-                if promoting[0]:
-                    board.promote(promoting[1].pos,promoting[1].color)
-                move = False
-        if event.type == MOUSEBUTTONDOWN and event.button == BUTTON_RIGHT and not menu:
-            (y,x)=event.pos
-            x = int(x/80)
-            y = int(y/80)
-        if event.type == MOUSEBUTTONUP and event.button == BUTTON_RIGHT and not menu:
-            if not piece_raised == 0:
-                piece_raised = 0
-                board.reset()
-            (j,i)=event.pos
-            i = int(i/80)
-            j = int(j/80)
-            (i1,j1) = (i,j)
-            if (rotate and fo == noturn) or (not rotate and fo == 1):
-                (i1,j1) = (7-i,7-j)
-            if (x,y) == (i,j):
-                if get_sqr((x,y)) == None:
-                    sqr = Squares(RED, (x,y))
-                    sqrs.append(sqr)
-                    sqrs[cnt_sqrs].draw()
-                    cnt_sqrs += 1
-                    reset_draws()
-                else:
-                    cnt_sqrs += -1
-                    sqrs.remove(get_sqr((x,y)))
-                    reset_draws()
-            else:
-                if get_arw((y,x),(j,i)) == None:
-                    arw = Arrows(LGREEN,(y,x),(j,i))
-                    arws.append(arw)
-                    arws[cnt_arws].draw()
-                    cnt_arws += 1
-                else:
-                    cnt_arws += -1
-                    arws.remove(get_arw((y,x),(j,i)))
-                    reset_draws()
-            pygame.display.update()
+                        cnt_arws += -1
+                        arws.remove(get_arw((y,x),(j,i)))
+                        reset_draws()
+                pygame.display.update()
