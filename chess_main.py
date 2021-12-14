@@ -446,17 +446,24 @@ class Board:
             z = 240
             s = -1
         if color == WHITE:
-            pygame.draw.rect(screen, WHITE, (r*80, c*80-z, 80, 320))
+            pygame.draw.rect(screen, BLACK, (r*80, c*80-z, 80, 320))
             screen.blit (Q_img,(r*80,c*80))
             screen.blit (N_img,(r*80,c*80+80*s))
             screen.blit (R_img,(r*80,c*80+160*s))
             screen.blit (B_img,(r*80,c*80+240*s))
         else:
-            pygame.draw.rect(screen, WHITE, (r*80, c*80-240+z, 80, 320))
-            screen.blit (q_img,(r*80,c*80))
-            screen.blit (n_img,(r*80,c*80-80*s))
-            screen.blit (r_img,(r*80,c*80-160*s))
-            screen.blit (b_img,(r*80,c*80-240*s))
+            if mode == 0:
+                pygame.draw.rect(screen, WHITE, (r*80, c*80-240+z, 80, 320))
+                screen.blit (q_img,(r*80,c*80))
+                screen.blit (n_img,(r*80,c*80-80*s))
+                screen.blit (r_img,(r*80,c*80-160*s))
+                screen.blit (b_img,(r*80,c*80-240*s))
+            elif mode == 1:
+                pygame.draw.rect(screen, BLACK, (r*80, c*80-240+z, 80, 320))
+                screen.blit (q2_img,(r*80,c*80))
+                screen.blit (n2_img,(r*80,c*80-80*s))
+                screen.blit (r2_img,(r*80,c*80-160*s))
+                screen.blit (b2_img,(r*80,c*80-240*s))
         pygame.display.update()
 
     def finish_game(self):#mostrar un mensaje de fin de juego
@@ -1045,6 +1052,13 @@ Q_img = chessfont.render("w", 1, WHITE)
 q_img = chessfont.render("w", 1, BLACK)
 K_img = chessfont.render("l", 1, WHITE)
 k_img = chessfont.render("l", 1, BLACK)
+
+p2_img = chessfont.render("p", 1, WHITE)
+n2_img = chessfont.render("n", 1, WHITE)
+b2_img = chessfont.render("b", 1, WHITE)
+r2_img = chessfont.render("r", 1, WHITE)
+q2_img = chessfont.render("q", 1, WHITE)
+k2_img = chessfont.render("k", 1, WHITE)
 images = [P_img,p_img,N_img,n_img,B_img,b_img,R_img,r_img,Q_img,q_img,K_img,k_img]
 
 types = ['p','n','b','r','q','k']
@@ -1169,7 +1183,107 @@ while running:
                 (i,j) = Pos
                 i = int(i/80)
                 j = int(j/80)
-                if piece_raised == 0 and not promoting[0] and not game_over() and not menu:#levantar pieza (1° click)
+                if promoting[0]:#solo si se esta coronando un peon(3°click)
+                    pawn = promoting[1]
+                    (r,c) = pawn.pos
+                    (y,x) = promoting[3]
+                    (n1,n2,n3) = (1,2,3)
+                    if (rotate and fo == turn) or (not rotate and fo == 1):
+                        (n1,n2,n3) = (-n1,-n2,-n3)
+                        (r,c) = (7-r,7-c)
+                    if pawn.color == WHITE:
+                        if [j,i] == [r,c]:
+                            pawn.type = 5
+                            pawn.image = Q_img
+                        elif [j,i] == [r+n1,c]:
+                            pawn.type = 2
+                            pawn.image = N_img
+                        elif [j,i] == [r+n2,c]:
+                            pawn.type = 4
+                            pawn.image = R_img
+                        elif [j,i] == [r+n3,c]:
+                            pawn.type = 3
+                            pawn.image = B_img
+                        else:
+                            if not promoting[2] == None:
+                                Bpieces.append(promoting[2])
+                                board.position[r][c] = promoting[2]
+                                pcd = None
+                            else:
+                                board.position[r][c] = 0
+                            board.set_piece(columnes[x],lines[y],pawn)
+                            (turn,noturn)=(0,1)
+                    elif pawn.color == BLACK:
+                        if [j,i] == [r,c]:
+                            pawn.type = 5
+                            pawn.image = q_img
+                            if mode == 1:
+                                pawn.image2 = q2_img
+                        elif [j,i] == [r-n1,c]:
+                            pawn.type = 2
+                            pawn.image = n_img
+                            if mode == 1:
+                                pawn.image2 = n2_img
+                        elif [j,i] == [r-n2,c]:
+                            pawn.type = 4
+                            pawn.image2 = r_img
+                            if mode == 1:
+                                pawn.image2 = r2_img
+                        elif [j,i] == [r-n3,c]:
+                            pawn.type = 3
+                            pawn.image = b_img
+                            if mode == 1:
+                                pawn.image2 = b2_img
+                        else:
+                            if not promoting[2] == None:
+                                Wpieces.append(promoting[2])
+                                board.position[r][c] = promoting[2]
+                                pcd = None
+                            else:
+                                board.position[r][c] = 0
+                            board.set_piece(columnes[x],lines[y],pawn)
+                            (turn,noturn)=(1,0)
+                    promoting = [False,None,None,None]
+                    board.reset_lm()
+                    board.reset()
+                    print(board)
+                    print(repr(board))
+                elif game_over():#interfaz de fin de juego
+                    (i,j) = Pos
+                    if 190<i and i<310:
+                        if 390<j and j<430:
+                            board.restart()
+                            turn = 0
+                            noturn = 1
+                            board.reset_lm()
+                            board.reset()
+                    elif 330<i and i<450:
+                        if 390<j and j<430:
+                            pygame.quit()
+                            running = False
+                            sys.exit()
+                elif menu:
+                    (i,j) = Pos
+                    if 190<i and i<310:
+                        if 390<j and j<430:
+                            board.restart()
+                            turn = 0
+                            noturn = 1
+                            board.reset_lm()
+                            mode = 0
+                            menu = False
+                            board.reset()
+                    elif 330<i and i<450:
+                        if 390<j and j<430:
+                            board.restart()
+                            turn = 0
+                            noturn = 1
+                            board.reset_lm()
+                            mode = 1
+                            menu = False
+                            change_font()
+                            board.reset()
+                elif piece_raised == 0:#levantar pieza (1° click)
                     board.reset()
                     if (rotate and fo == noturn) or (not rotate and fo == 1):
                         (i,j) = (7-i,7-j)
@@ -1180,7 +1294,7 @@ while running:
                             piece_raised = 0
                         if board.position[j][i].color == color_turn[turn]:#saber cuando la pieza este en el aire
                             piece_raised.rsrch_lm(board)
-                elif not piece_raised == 0 and not promoting[0] and not game_over() and move:#colocar pieza(2° click)
+                else:#colocar pieza(2° click)
                     (I,J) = (i,j)
                     if (rotate and fo == noturn) or (not rotate and fo == 1):
                         (i,j) = (7-i,7-j)
@@ -1248,98 +1362,6 @@ while running:
                     if promoting[0]:
                         board.promote(promoting[1].pos,promoting[1].color)
                     move = False
-                elif promoting[0]:#solo si se esta coronando un peon(3°click)
-                    pawn = promoting[1]
-                    (r,c) = pawn.pos
-                    (y,x) = promoting[3]
-                    (n1,n2,n3) = (1,2,3)
-                    if (rotate and fo == turn) or (not rotate and fo == 1):
-                        (n1,n2,n3) = (-n1,-n2,-n3)
-                        (r,c) = (7-r,7-c)
-                    if pawn.color == WHITE:
-                        if [j,i] == [r,c]:
-                            pawn.type = 5
-                            pawn.image = Q_img
-                        elif [j,i] == [r+n1,c]:
-                            pawn.type = 2
-                            pawn.image = N_img
-                        elif [j,i] == [r+n2,c]:
-                            pawn.type = 4
-                            pawn.image = R_img
-                        elif [j,i] == [r+n3,c]:
-                            pawn.type = 3
-                            pawn.image = B_img
-                        else:
-                            if not promoting[2] == None:
-                                Bpieces.append(promoting[2])
-                                board.position[r][c] = promoting[2]
-                                pcd = None
-                            else:
-                                board.position[r][c] = 0
-                            board.set_piece(columnes[x],lines[y],pawn)
-                            (turn,noturn)=(0,1)
-                    elif pawn.color == BLACK:
-                        if [j,i] == [r,c]:
-                            pawn.type = 5
-                            pawn.image = q_img
-                        elif [j,i] == [r-n1,c]:
-                            pawn.type = 2
-                            pawn.image = n_img
-                        elif [j,i] == [r-n2,c]:
-                            pawn.type = 4
-                            pawn.image = r_img
-                        elif [j,i] == [r-n3,c]:
-                            pawn.type = 3
-                            pawn.image = b_img
-                        else:
-                            if not promoting[2] == None:
-                                Wpieces.append(promoting[2])
-                                board.position[r][c] = promoting[2]
-                                pcd = None
-                            else:
-                                board.position[r][c] = 0
-                            board.set_piece(columnes[x],lines[y],pawn)
-                            (turn,noturn)=(1,0)
-                    promoting = [False,None,None,None]
-                    board.reset_lm()
-                    board.reset()
-                    print(board)
-                    print(repr(board))
-                elif game_over() and not promoting[0]:#interfaz de fin de juego
-                    (i,j) = Pos
-                    if 190<i and i<310:
-                        if 390<j and j<430:
-                            board.restart()
-                            turn = 0
-                            noturn = 1
-                            board.reset_lm()
-                            board.reset()
-                    elif 330<i and i<450:
-                        if 390<j and j<430:
-                            pygame.quit()
-                            running = False
-                            sys.exit()
-                elif menu:
-                    (i,j) = Pos
-                    if 190<i and i<310:
-                        if 390<j and j<430:
-                            board.restart()
-                            turn = 0
-                            noturn = 1
-                            board.reset_lm()
-                            mode = 0
-                            menu = False
-                            board.reset()
-                    elif 330<i and i<450:
-                        if 390<j and j<430:
-                            board.restart()
-                            turn = 0
-                            noturn = 1
-                            board.reset_lm()
-                            mode = 1
-                            menu = False
-                            change_font()
-                            board.reset()
             elif event.button == BUTTON_RIGHT and not menu:
                 (y,x)=event.pos
                 x = int(x/80)
