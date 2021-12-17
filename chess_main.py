@@ -218,7 +218,7 @@ def display_menu():
 #|   ++++   Clase tablero   ++++   |#
 
 class Board:
-    def __init__(self,brd:str):#matriz de la posicion inicial
+    def __init__(self,brd:str):#creacion de la posicion inicial
         self.position = fen(brd)
 
     def __str__(self) -> str:
@@ -261,7 +261,46 @@ class Board:
 
     def __repr__(self) -> str:
         """rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"""
-        return self.get_fen() + '\n'
+        fencode = ''
+        rc = False
+        for i in range (8):
+            ctr = 0
+            for j in range (8):
+                ps = self.position[i][j]
+                if ps == 0:
+                    ctr += 1
+                else:
+                    if ctr > 0:
+                        fencode += str(ctr)
+                        ctr = 0
+                    if ps.color == WHITE:
+                        fencode += types[self.position[i][j].type-1].capitalize()
+                    elif ps.color == BLACK:
+                        fencode += types[self.position[i][j].type-1]
+            if ctr > 0:
+                fencode += str(ctr)
+            if i<7:
+                fencode += '/'
+        if turn == 0:
+            fencode += ' w '
+        else:
+            fencode += ' b '
+        if rc_K:
+            fencode += 'K'
+            rc = True
+        if rc_Q:
+            fencode += 'Q'
+            rc = True
+        if rc_k:
+            fencode += 'k'
+            rc = True
+        if rc_q:
+            fencode += 'q'
+            rc = True
+        if not rc:
+            fencode += '-'
+        fencode += ' - ' + str(last_cpm) + ' ' + str(Nmove)
+        return fencode + '\n'
 
     def get_piece(self,i,j):#obtener objeto pieza en posicion (i,j)
         (x,y) = (lines.index(j),columnes.index(i))
@@ -533,53 +572,10 @@ class Board:
                 if not p in Bpieces:
                     Bpieces.append(p)
 
-    def get_fen(self):
-        fencode = ''
-        rc = False
-        for i in range (8):
-            ctr = 0
-            for j in range (8):
-                ps = self.position[i][j]
-                if ps == 0:
-                    ctr += 1
-                else:
-                    if ctr > 0:
-                        fencode += str(ctr)
-                        ctr = 0
-                    if ps.color == WHITE:
-                        fencode += types[self.position[i][j].type-1].capitalize()
-                    elif ps.color == BLACK:
-                        fencode += types[self.position[i][j].type-1]
-            if ctr > 0:
-                fencode += str(ctr)
-            if i<7:
-                fencode += '/'
-        if turn == 0:
-            fencode += ' w '
-        else:
-            fencode += ' b '
-        if rc_K:
-            fencode += 'K'
-            rc = True
-        if rc_Q:
-            fencode += 'Q'
-            rc = True
-        if rc_k:
-            fencode += 'k'
-            rc = True
-        if rc_q:
-            fencode += 'q'
-            rc = True
-        if not rc:
-            fencode += '-'
-        fencode += ' - ' + str(last_cpm) + ' ' + str(Nmove)
-        return fencode
-
-
 #|   ++++   Clase piezas   ++++   |#
 
 class Piece:
-    def __init__(self,img,color,piece,pos):#*#info general de pieza,
+    def __init__(self,img:pygame.Surface,color:tuple,piece:int,pos:list):#*#info general de pieza,
     #*# Tipo de pieza: 0 <=> nada, 1 <=> peon, 2 <=> caballo, 3 <=> alfil, 4 <=> torre, 5 <=> reina, 6 <=> rey
         self.image = img
         self.image2 = None
@@ -789,7 +785,7 @@ class Piece:
 #|   ++++   Clase flechas   ++++   |#
 
 class Arrows:
-    def __init__(self,color,p1,p2):
+    def __init__(self,color:tuple,p1:list,p2:list):
         self.color = color
         self.bottom = p1
         self.top = p2
@@ -815,7 +811,7 @@ class Arrows:
 #|   ++++   Clase casillas   ++++   |#
 
 class Squares:
-    def __init__(self,color,pos):
+    def __init__(self,color:tuple,pos:list):
         self.color = color
         self.pos = pos
 
