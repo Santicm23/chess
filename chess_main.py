@@ -192,7 +192,14 @@ def get_arw(p1,p2):
             return i
 
 def reset_draws():
-    board.reset()
+    if not m_arw == 0:
+        m_arw.draw()
+    if check[0]:
+        if turn == 0:
+            c_sqr = Squares(RED,K.pos)
+        else:
+            c_sqr = Squares(RED,k.pos)
+        c_sqr.draw()
     for i in sqrs:
         i.draw()
     for j in arws:
@@ -322,7 +329,7 @@ class Board:
                     (i1,j1) = (7-i1,7-j1)
                 if not self.position[j1][i1] == 0:
                     self.position[j1][i1].draw(i*80,j*80)
-
+        reset_draws()
         if game_over() and not promoting[0]:
             self.finish_game()
         pygame.display.update()
@@ -596,7 +603,7 @@ class Piece:
     def move(self,new_pos,new_board,anim):#*#funcion mover pieza
     #*#(verifica si el movimiento es posible y si es asi, lo efectua, si es necesario hace la animación del movimiento)
     #*#(reproduce un sonido de colocar pieza)
-        global turn, noturn, check, en_pssnt, rc_K, rc_Q, rc_k, rc_q
+        global turn, noturn, check, en_pssnt, rc_K, rc_Q, rc_k, rc_q, last_cpm, Nmove
         if not new_pos == self.pos:
             distance_x = (new_pos[0] - self.pos[0])/frames
             distance_y = (new_pos[1] - self.pos[1])/frames
@@ -688,11 +695,17 @@ class Piece:
                     (turn,noturn)=(1,0)
                 elif self.color == BLACK:
                     (turn,noturn)=(0,1)
+                if piece_raised.type == 1:
+                    last_cpm = 0
+                else:
+                    last_cpm += 1
+                if turn == 0:
+                    Nmove += 1
 
     def capture(self,new_pos,new_board,anim):#*#funcion capturar pieza
     #*#(verifica si la captura es posible y si es asi, la efectua, si es necesario hace la animación del movimiento)
     #*#(Reproduce un sonido de colocar y capturar una pieza)
-        global turn, noturn, check, en_pssnt, rc_K, rc_Q, rc_k, rc_q
+        global turn, noturn, check, en_pssnt, rc_K, rc_Q, rc_k, rc_q, last_cpm, Nmove
         if not new_pos == self.pos:
             distance_x = (new_pos[0] - self.pos[0])/frames
             distance_y = (new_pos[1] - self.pos[1])/frames
@@ -742,6 +755,9 @@ class Piece:
                 elif self.color == BLACK:
                     (turn,noturn)=(0,1)
                     del Wpieces[Wpieces.index(pd)]
+                last_cpm = 0
+                if turn == 0:
+                    Nmove += 1
 
     def rsrch_lm(self,new_board):#*#calcular jugadas posibles de la pieza misma y guradarlas en una lista
         (y,x) = self.pos
@@ -791,22 +807,21 @@ class Arrows:
         self.top = p2
 
     def draw(self):
-        (ax,ay) = (self.bottom[0]*80,self.bottom[1]*80)
-        (bx,by) = (self.top[0]*80,self.top[1]*80)
+        (ax,ay) = (self.bottom[0]*80+40,self.bottom[1]*80+40)
+        (bx,by) = (self.top[0]*80+40,self.top[1]*80+40)
         vec = (ax-bx,ay-by)
         invec = (-vec[1], vec[0])
         norm = ((ax-bx)**2+(ay-by)**2)**0.5
         dist = 20*3**0.5
         scal1 = (vec[0]/norm, vec[1]/norm)
         scal2 = (invec[0]/norm, invec[1]/norm)
-        p1 = (ax+10*scal2[0]+40-20*scal1[0],ay+10*scal2[1]+40-20*scal1[1])
-        p2 = (ax-10*scal2[0]+40-20*scal1[0],ay-10*scal2[1]+40-20*scal1[1])
-        p3 = (bx+dist*scal1[0]+40-10*scal2[0],by+dist*scal1[1]+40-10*scal2[1])
-        p4 = (bx+dist*scal1[0]+40-25*scal2[0],by+dist*scal1[1]+40-25*scal2[1])
-        p5 = (bx+40,by+40)
-        p6 = (bx+dist*scal1[0]+40+25*scal2[0],by+dist*scal1[1]+40+25*scal2[1])
-        p7 = (bx+dist*scal1[0]+40+10*scal2[0],by+dist*scal1[1]+40+10*scal2[1])
-        pygame.draw.polygon(screen,self.color,(p1,p2,p3,p4,p5,p6,p7))
+        p1 = (ax,ay)
+        p2 = (bx+30*scal1[0],by+30*scal1[1])
+        p3 = (bx+dist*scal1[0]-5*scal2[0],by+dist*scal1[1]-5*scal2[1])
+        p4 = (bx+dist*scal1[0]+5*scal2[0],by+dist*scal1[1]+5*scal2[1])
+        pygame.draw.aaline(screen, self.color, p1, p2, 1)
+        pygame.draw.aaline(screen, self.color, p2, p3, 1)
+        pygame.draw.aaline(screen, self.color, p2, p4, 1)
 
 #|   ++++   Clase casillas   ++++   |#
 
@@ -1101,6 +1116,7 @@ mouse_sq = []
 psr = 0
 cnt = 0
 
+m_arw = 0
 cnt_arws = 0
 cnt_sqrs = 0
 arws = []
@@ -1296,20 +1312,12 @@ while running:
                     old_pos = piece_raised.pos
                     if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
                         piece_raised.move([j,i],board,True)
-                        if piece_raised.type == 1:
-                            last_cpm = 0
-                        else:
-                            last_cpm += 1
-                        if turn == 0:
-                            Nmove += 1
                     elif not board.position[j][i] == 0 or en_passant(piece_raised,[j,i],turn,board):
                         pcd = board.get_piece(columnes[i],lines[j])
                         piece_raised.capture([j,i],board,True)
-                        last_cpm = 0
-                        if turn == 0:
-                            Nmove += 1
                     if not old_pos == piece_raised.pos:
                         nt = orientation
+                        m_arw = Arrows(color_turn[noturn],(old_pos[1],old_pos[0]),(piece_raised.pos[1],piece_raised.pos[0]))
                         if not promoting[0]:
                             print(board)
                             print(repr(board))
@@ -1381,20 +1389,12 @@ while running:
                         break
                     if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
                         piece_raised.move([j,i],board,False)
-                        if piece_raised.type == 1:
-                            last_cpm = 0
-                        else:
-                            last_cpm += 1
-                        if turn == 0:
-                            Nmove += 1
                     elif not board.position[j][i] == 0 or en_passant(piece_raised,[j,i],turn,board):
                         pcd = board.position[j][i]
                         piece_raised.capture([j,i],board,False)
-                        last_cpm = 0
-                        if turn == 0:
-                            Nmove += 1
                     if not old_pos == piece_raised.pos:
                         nt = orientation
+                        m_arw = Arrows(color_turn[noturn],(old_pos[1],old_pos[0]),(piece_raised.pos[1],piece_raised.pos[0]))
                         if not promoting[0]:
                             print(board)
                             print(repr(board))
@@ -1441,11 +1441,11 @@ while running:
                         sqrs.append(sqr)
                         sqrs[cnt_sqrs].draw()
                         cnt_sqrs += 1
-                        reset_draws()
+                        board.reset()
                     else:
                         cnt_sqrs += -1
                         sqrs.remove(get_sqr((x,y)))
-                        reset_draws()
+                        board.reset()
                 else:
                     if get_arw((y,x),(j,i)) == None:
                         arw = Arrows(LGREEN,(y,x),(j,i))
@@ -1455,6 +1455,5 @@ while running:
                     else:
                         cnt_arws += -1
                         arws.remove(get_arw((y,x),(j,i)))
-                        reset_draws()
+                        board.reset()
                 pygame.display.update()
-    clock.tick(60)
