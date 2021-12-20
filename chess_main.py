@@ -675,14 +675,14 @@ class Piece:
                         px = fpx + distance_y * i
                         self.draw(px*80,py*80)
                         pygame.display.update()
-                        time.sleep(df)
                         if i == frames*2/3:
                             move_sound.play()
+                        clock.tick(60)
                 new_board.set_piece(columnes[new_pos[1]],lines[new_pos[0]],self)
                 if cstl:
                     new_board.set_piece(columnes[rm[0][1]],lines[rm[0][0]],rook)
                     if not anim:
-                        time.sleep(df*3)
+                        time.sleep(delay)
                     move_sound.play()
                 if self.color == WHITE:
                     (turn,noturn)=(1,0)
@@ -731,10 +731,10 @@ class Piece:
                         px = fpx + distance_y * i
                         self.draw(px*80,py*80)
                         pygame.display.update()
-                        time.sleep(df)
                         if i == frames/2:
                             move_sound.play()
                             capture_sound.play()
+                        clock.tick(60)
                 new_board.set_piece(columnes[new_pos[1]],lines[new_pos[0]],self)
                 if self.color == WHITE:
                     (turn,noturn)=(1,0)
@@ -1079,11 +1079,11 @@ menu = True
 move = False
 check=[False,None,False]
 running = True
+clock = pygame.time.Clock()
 
 fps = 60
 delay = 0.2
 frames = int(fps*delay)
-df = 1/fps
 
 score = [0,0]
 
@@ -1131,37 +1131,36 @@ while running:
         if (rotate and fo == noturn) or (not rotate and fo == 1):
             (M,N) = (7-m,7-n)
             (I,J) = (7-i,7-j)
-        if cnt % 6:
-            if not move:
-                (m1,m2) = pos
-                M1 = int(m1/80)
-                M2 = int(m2/80)
-                board.reset_zone((M1,M2))
-                board.show_lm(piece_raised)
-                if M1 < I+2 and M1 > I-2 and M2 < J+2 and M2 > J-2:
-                    screen.blit(r_sq,(I*80,J*80))
-            if len(mouse_sq) == 2 and not mouse_sq == (N,M):
-                (a,b) = mouse_sq
-                (a1,b1) = mouse_sq
-                if (rotate and fo == noturn) or (not rotate and fo == 1):
-                    (a1,b1) = (7-a1,7-b1)
-                board.reset_sq((a1,b1),GREY,LGREY)
-                if mselect == mp:
-                    screen.blit(mp,(b1*80+30,a1*80+30))
-                elif mselect == cp:
-                    screen.blit(cp,(b1*80,a1*80))
-                    if not board.position[a][b] == 0:
-                        board.position[a][b].draw(b1*80,a1*80)
-            if [N,M] in piece_raised.lm:
-                board.reset_sq((n,m),GREY,LGREY)
-                mselect = mp
-                if not board.position[N][M] == 0:
-                    board.position[N][M].draw(m*80,n*80)
-                    mselect = cp
-                screen.blit(ms_mp,(m*80,n*80))
-                mouse_sq = [N,M]
-            if not move:
-                piece_raised.draw(m1-40,m2-40)
+        if not move:
+            (m1,m2) = pos
+            M1 = int(m1/80)
+            M2 = int(m2/80)
+            board.reset_zone((M1,M2))
+            board.show_lm(piece_raised)
+            if M1 < I+2 and M1 > I-2 and M2 < J+2 and M2 > J-2:
+                screen.blit(r_sq,(I*80,J*80))
+        if len(mouse_sq) == 2 and not mouse_sq == (N,M):
+            (a,b) = mouse_sq
+            (a1,b1) = mouse_sq
+            if (rotate and fo == noturn) or (not rotate and fo == 1):
+                (a1,b1) = (7-a1,7-b1)
+            board.reset_sq((a1,b1),GREY,LGREY)
+            if mselect == mp:
+                screen.blit(mp,(b1*80+30,a1*80+30))
+            elif mselect == cp:
+                screen.blit(cp,(b1*80,a1*80))
+                if not board.position[a][b] == 0:
+                    board.position[a][b].draw(b1*80,a1*80)
+        if [N,M] in piece_raised.lm:
+            board.reset_sq((n,m),GREY,LGREY)
+            mselect = mp
+            if not board.position[N][M] == 0:
+                board.position[N][M].draw(m*80,n*80)
+                mselect = cp
+            screen.blit(ms_mp,(m*80,n*80))
+            mouse_sq = [N,M]
+        if not move:
+            piece_raised.draw(m1-40,m2-40)
         pygame.display.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:#correcto apagado
@@ -1458,3 +1457,4 @@ while running:
                         arws.remove(get_arw((y,x),(j,i)))
                         reset_draws()
                 pygame.display.update()
+    clock.tick(60)
