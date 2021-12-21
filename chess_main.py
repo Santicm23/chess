@@ -309,10 +309,6 @@ class Board:
         fencode += ' - ' + str(last_cpm) + ' ' + str(Nmove)
         return fencode + '\n'
 
-    def get_piece(self,i,j):#obtener objeto pieza en posicion (i,j)
-        (x,y) = (lines.index(j),columnes.index(i))
-        return self.position[x][y]
-
     def set_piece(self,i,j,piece):#colocar pieza en posicion (i,j)
         (x,y) = (lines.index(j),columnes.index(i))
         piece.pos = [x,y]
@@ -887,7 +883,7 @@ def lmc_bishop(self,new_pos,t,new_board):#calcula si la posicion dada es una jug
                             return True
                         q=q+1
                     if self.pos[0]+q*c>-1 and self.pos[0]+q*c<8 and self.pos[1]+q*d>-1 and self.pos[1]+q*d<8 and not new_board.position[self.pos[0]+q*c][self.pos[1]+q*d] == 0:
-                        if new_pos[0] == self.pos[0]+q*c and new_pos[1]==self.pos[1]+q*d and new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == BLACK:
+                        if new_pos[0] == self.pos[0]+q*c and new_pos[1]==self.pos[1]+q*d and new_board.position[new_pos[0]][new_pos[1]].color == BLACK:
                             return True
         elif new_board.position[self.pos[0]][self.pos[1]].color == BLACK and t == 1:#negro
             for c in range (-1,2,2):
@@ -898,7 +894,7 @@ def lmc_bishop(self,new_pos,t,new_board):#calcula si la posicion dada es una jug
                             return True
                         q=q+1
                     if self.pos[0]+q*c>-1 and self.pos[0]+q*c<8 and self.pos[1]+q*d>-1 and self.pos[1]+q*d<8 and not new_board.position[self.pos[0]+q*c][self.pos[1]+q*d] == 0:
-                        if new_pos[0]==self.pos[0]+q*c and new_pos[1]==self.pos[1]+q*d and new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == WHITE:
+                        if new_pos[0]==self.pos[0]+q*c and new_pos[1]==self.pos[1]+q*d and new_board.position[new_pos[0]][new_pos[1]].color == WHITE:
                             return True
 def lmc_rook(self,new_pos,t,new_board):#calcula si la posicion dada es una jugada o captura de la torre dada
     if not new_board.position[self.pos[0]][self.pos[1]] == 0 and new_board.position[self.pos[0]][self.pos[1]].type == 4:
@@ -921,7 +917,7 @@ def lmc_rook(self,new_pos,t,new_board):#calcula si la posicion dada es una jugad
                             return True
                         q=q+1
                     if self.pos[0]+q*a>-1 and self.pos[0]+q*a<8 and self.pos[1]+q*b>-1 and self.pos[1]+q*b<8 and not new_board.position[self.pos[0]+q*a][self.pos[1]+q*b] == 0:
-                        if new_pos[0]==self.pos[0]+q*a and new_pos[1]==self.pos[1]+q*b and new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == BLACK:
+                        if new_pos[0]==self.pos[0]+q*a and new_pos[1]==self.pos[1]+q*b and new_board.position[new_pos[0]][new_pos[1]].color == BLACK:
                             return True
         elif new_board.position[self.pos[0]][self.pos[1]].color == BLACK and t == 1:#negro
             for i in range (2):
@@ -942,7 +938,7 @@ def lmc_rook(self,new_pos,t,new_board):#calcula si la posicion dada es una jugad
                             return True
                         q=q+1
                     if self.pos[0]+q*a>-1 and self.pos[0]+q*a<8 and self.pos[1]+q*b>-1 and self.pos[1]+q*b<8 and not new_board.position[self.pos[0]+q*a][self.pos[1]+q*b] == 0:
-                        if new_pos[0]==self.pos[0]+q*a and new_pos[1]==self.pos[1]+q*b and  new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == WHITE:
+                        if new_pos[0]==self.pos[0]+q*a and new_pos[1]==self.pos[1]+q*b and  new_board.position[new_pos[0]][new_pos[1]].color == WHITE:
                             return True
 def lmc_queen(self,new_pos,t,new_board):#calcula si la posicion dada es una jugada o captura de la reina dada
     if new_board.position[self.pos[0]][self.pos[1]].type == 5:
@@ -955,7 +951,7 @@ def lmc_queen(self,new_pos,t,new_board):#calcula si la posicion dada es una juga
                             return True
                         q=q+1
                     if self.pos[0]+q*c>-1 and self.pos[0]+q*c<8 and self.pos[1]+q*d>-1 and self.pos[1]+q*d<8 and not new_board.position[self.pos[0]+q*c][self.pos[1]+q*d] == 0:
-                        if new_pos[0]==self.pos[0]+q*c and new_pos[1]==self.pos[1]+q*d and  new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == BLACK:
+                        if new_pos[0]==self.pos[0]+q*c and new_pos[1]==self.pos[1]+q*d and  new_board.position[new_pos[0]][new_pos[1]].color == BLACK:
                             return True
         elif new_board.position[self.pos[0]][self.pos[1]].color == BLACK and t == 1:#negro
             for c in range (-1,2):
@@ -966,7 +962,7 @@ def lmc_queen(self,new_pos,t,new_board):#calcula si la posicion dada es una juga
                             return True
                         q=q+1
                     if self.pos[0]+q*c>-1 and self.pos[0]+q*c<8 and self.pos[1]+q*d>-1 and self.pos[1]+q*d<8 and not new_board.position[self.pos[0]+q*c][self.pos[1]+q*d] == 0:
-                        if new_pos[0]==self.pos[0]+q*c and new_pos[1]==self.pos[1]+q*d and new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == WHITE:
+                        if new_pos[0]==self.pos[0]+q*c and new_pos[1]==self.pos[1]+q*d and new_board.position[new_pos[0]][new_pos[1]].color == WHITE:
                             return True
 def lmc_king(self,new_pos,t,new_board):#calcula si la posicion dada es una jugada o captura del rey dado
     if new_board.position[self.pos[0]][self.pos[1]].type == 6:
@@ -974,17 +970,17 @@ def lmc_king(self,new_pos,t,new_board):#calcula si la posicion dada es una jugad
             for c in range (-1,2):
                 for d in range (-1,2):
                     if new_pos[0]==self.pos[0]+c and new_pos[1]==self.pos[1]+d:
-                        if not  new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]) == 0 and new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == BLACK:
+                        if not  new_board.position[new_pos[0]][new_pos[1]] == 0 and new_board.position[new_pos[0]][new_pos[1]].color == BLACK:
                             return True
-                        elif new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]) == 0:
+                        elif new_board.position[new_pos[0]][new_pos[1]] == 0:
                             return True
         elif new_board.position[self.pos[0]][self.pos[1]].color == BLACK and t == 1:#negro
             for c in range (-1,2):
                 for d in range (-1,2):
                     if new_pos[0]==self.pos[0]+c and new_pos[1]==self.pos[1]+d:
-                        if not  new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]) == 0 and new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == WHITE:
+                        if not  new_board.position[new_pos[0]][new_pos[1]] == 0 and new_board.position[new_pos[0]][new_pos[1]].color == WHITE:
                             return True
-                        elif new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]) == 0:
+                        elif new_board.position[new_pos[0]][new_pos[1]] == 0:
                             return True
 def lm_castle(self,new_pos,t,new_board):#calcula si la posicion dada es una jugada de enrroque
     if not new_board.position[self.pos[0]][self.pos[1]].type == 0 and new_board.position[self.pos[0]][self.pos[1]].type == 6 and not check[0]:
@@ -1032,16 +1028,16 @@ def lc_pawn(self,new_pos,t,new_board):#calcula si la posicion dada es una captur
         if new_board.position[self.pos[0]][self.pos[1]].color == WHITE and t == 0:#blanco
             if new_pos[0] == self.pos[0]-1:
                 if new_pos[1] == self.pos[1]-1 or new_pos[1] == self.pos[1]+1:
-                    if new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]) == 0 or new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == BLACK:
+                    if new_board.position[new_pos[0]][new_pos[1]] == 0 or new_board.position[new_pos[0]][new_pos[1]].color == BLACK:
                         return True
         elif new_board.position[self.pos[0]][self.pos[1]].color == BLACK and t == 1:#negro
             if new_pos[0] == self.pos[0]+1:
                 if new_pos[1] == self.pos[1]-1 or new_pos[1] == self.pos[1]+1:
-                    if new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]) == 0 or new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]).color == WHITE:
+                    if new_board.position[new_pos[0]][new_pos[1]] == 0 or new_board.position[new_pos[0]][new_pos[1]].color == WHITE:
                         return True
 def en_passant(self,new_pos,t,new_board):#calcula si la posicion dada es una captura al paso del peón dado
     if lc_pawn(self,new_pos,t,new_board):
-        if new_board.get_piece(columnes[new_pos[1]],lines[new_pos[0]]) == 0:
+        if new_board.position[new_pos[0]][new_pos[1]] == 0:
             if en_pssnt[0] and new_pos == en_pssnt[1]:
                 return True
 def capture_posible(self,new_pos,t,new_board):#verifica, para el tipo de pieza, si la captura es correcta
@@ -1322,7 +1318,7 @@ while running:
                     if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
                         piece_raised.move([j,i],board,True)
                     elif not board.position[j][i] == 0 or en_passant(piece_raised,[j,i],turn,board):
-                        pcd = board.get_piece(columnes[i],lines[j])
+                        pcd = board.position[j][i]
                         piece_raised.capture([j,i],board,True)
                     if not old_pos == piece_raised.pos:
                         nt = orientation
@@ -1353,12 +1349,12 @@ while running:
                             score[0] = score[0] + 0.5
                             score[1] = score[1] + 0.5
                     if not board.position[j][i] == 0:
-                        if board.get_piece(columnes[i],lines[j]).color == piece_raised.color:
-                            if not board.get_piece(columnes[i],lines[j]) == piece_raised:
+                        if board.position[j][i].color == piece_raised.color:
+                            if not board.position[j][i] == piece_raised:
                                 board.reset()
-                                piece_raised = board.get_piece(columnes[i],lines[j])
+                                piece_raised = board.position[j][i]
                                 screen.blit(r_sq,(I*80,J*80))
-                                board.get_piece(columnes[i],lines[j]).draw(I*80,J*80)
+                                board.position[j][i].draw(I*80,J*80)
                                 piece_raised.rsrch_lm(board)
                                 board.show_lm(piece_raised)
                                 pygame.display.update()
@@ -1393,7 +1389,7 @@ while running:
                         move = True
                         board.reset_zone((I,J))
                         screen.blit(r_sq,(I*80,J*80))
-                        board.get_piece(columnes[i],lines[j]).draw(I*80,J*80)
+                        board.position[j][i].draw(I*80,J*80)
                         board.show_lm(piece_raised)
                         break
                     if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
