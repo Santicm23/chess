@@ -15,23 +15,20 @@ pygame.display.set_icon(icon)
 
 #|   ++++   Fuentes   ++++   |#
 
-font = pygame.font.SysFont('Gerbera', 16)
-font2 = pygame.font.SysFont('Gerbera', 40)
-font3 = pygame.font.SysFont('Gerbera', 30)
-chessfont = pygame.font.Font('fonts/CASEFONT.TTF', 80)
+font = pygame.font.SysFont("Gerbera", 16)
+font2 = pygame.font.SysFont("Gerbera", 40)
+font3 = pygame.font.SysFont("Gerbera", 30)
+chessfont = pygame.font.Font("fonts/CASEFONT.TTF", 80)
 
 #|   ++++   Colores en RGB   ++++   |#
 
-BROWN = (139,69,19)
 BLACK = (0,0,0)
 WHITE = (225,225,225)
 GREY = (125,125,125)
 LGREY = (155,155,155)
-BEIGE = (255,206,158,255)
 GREEN = (107,142,35)
 LGREEN = (163,217,54)
 RED = (205,92,92)
-YELLOW = (255,179,25)
 
 #|   ++++   Imagenes de diseño   ++++   |#
 
@@ -47,10 +44,10 @@ capture_sound = pygame.mixer.Sound("sounds/piece_capturing.mp3")
 
 #|   ++++   Variables principales   ++++   |#
 
-rc_Q=True
-rc_K=True
-rc_q=True
-rc_k=True
+rc_Q = True
+rc_K = True
+rc_q = True
+rc_k = True
 turn = 0
 noturn = 0
 color_turn = [WHITE,BLACK]
@@ -268,7 +265,7 @@ class Board:
 
     def __repr__(self) -> str:
         """rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"""
-        fencode = ''
+        fencode = ""
         rc = False
         for i in range (8):
             ctr = 0
@@ -1056,31 +1053,31 @@ def capture_posible(self,new_pos,t,new_board):#verifica, para el tipo de pieza, 
 
 #|      ~~~~~      uso y creacion de tablero, piezas, imagenes de piezas, y variables      ~~~~~      |#
 
-P_img = chessfont.render("o", 1, WHITE)
-p_img = chessfont.render("o", 1, BLACK)
-N_img = chessfont.render("m", 1, WHITE)
-n_img = chessfont.render("m", 1, BLACK)
-B_img = chessfont.render("v", 1, WHITE)
-b_img = chessfont.render("v", 1, BLACK)
-R_img = chessfont.render("t", 1, WHITE)
-r_img = chessfont.render("t", 1, BLACK)
-Q_img = chessfont.render("w", 1, WHITE)
-q_img = chessfont.render("w", 1, BLACK)
-K_img = chessfont.render("l", 1, WHITE)
-k_img = chessfont.render("l", 1, BLACK)
+P_img = chessfont.render('o', 1, WHITE)
+p_img = chessfont.render('o', 1, BLACK)
+N_img = chessfont.render('m', 1, WHITE)
+n_img = chessfont.render('m', 1, BLACK)
+B_img = chessfont.render('v', 1, WHITE)
+b_img = chessfont.render('v', 1, BLACK)
+R_img = chessfont.render('t', 1, WHITE)
+r_img = chessfont.render('t', 1, BLACK)
+Q_img = chessfont.render('w', 1, WHITE)
+q_img = chessfont.render('w', 1, BLACK)
+K_img = chessfont.render('l', 1, WHITE)
+k_img = chessfont.render('l', 1, BLACK)
 
-p2_img = chessfont.render("p", 1, WHITE)
-n2_img = chessfont.render("n", 1, WHITE)
-b2_img = chessfont.render("b", 1, WHITE)
-r2_img = chessfont.render("r", 1, WHITE)
-q2_img = chessfont.render("q", 1, WHITE)
-k2_img = chessfont.render("k", 1, WHITE)
+p2_img = chessfont.render('p', 1, WHITE)
+n2_img = chessfont.render('n', 1, WHITE)
+b2_img = chessfont.render('b', 1, WHITE)
+r2_img = chessfont.render('r', 1, WHITE)
+q2_img = chessfont.render('q', 1, WHITE)
+k2_img = chessfont.render('k', 1, WHITE)
 images = [P_img,p_img,N_img,n_img,B_img,b_img,R_img,r_img,Q_img,q_img,K_img,k_img]
 
 types = ['p','n','b','r','q','k']
 imgtypes = ['o','m','v','t','w','l']
 
-brd = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'#Codigo FEN
+brd = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"#Codigo FEN
 
 Wpieces = []
 Bpieces = []
@@ -1300,7 +1297,6 @@ while running:
                             change_font()
                             board.reset()
                 elif piece_raised == 0:#levantar pieza (1° click)
-                    board.reset()
                     if (rotate and fo == noturn) or (not rotate and fo == 1):
                         (i,j) = (7-i,7-j)
                     if not board.position[j][i] == 0:
@@ -1323,12 +1319,6 @@ while running:
                     if not old_pos == piece_raised.pos:
                         nt = orientation
                         m_arw = Arrows(color_turn[noturn],old_pos,piece_raised.pos)
-                        if not promoting[0]:
-                            print(board)
-                            print(repr(board))
-                        if rotate:
-                            orientation = turn
-                            nt = noturn
                         if piece_raised.type == 1:
                             if piece_raised.pos[0] == 0:
                                 promoting = [True,piece_raised,pcd,old_pos]
@@ -1336,8 +1326,15 @@ while running:
                                 promoting = [True,piece_raised,pcd,old_pos]
                             else:
                                 board.reset_lm()
+                                print(board)
+                                print(repr(board))
                         else:
                             board.reset_lm()
+                            print(board)
+                            print(repr(board))
+                        if rotate:
+                            orientation = turn
+                            nt = noturn
                         check = board.check(noturn)
                     if game_over() and not promoting[0]:
                         if check[0]:
@@ -1348,7 +1345,7 @@ while running:
                         else:
                             score[0] = score[0] + 0.5
                             score[1] = score[1] + 0.5
-                    if not board.position[j][i] == 0:
+                    elif not board.position[j][i] == 0:
                         if board.position[j][i].color == piece_raised.color:
                             if not board.position[j][i] == piece_raised:
                                 board.reset()
@@ -1400,7 +1397,17 @@ while running:
                     if not old_pos == piece_raised.pos:
                         nt = orientation
                         m_arw = Arrows(color_turn[noturn],old_pos,piece_raised.pos)
-                        if not promoting[0]:
+                        if piece_raised.type == 1:
+                            if piece_raised.pos[0] == 0:
+                                promoting = [True,piece_raised,pcd,old_pos]
+                            elif piece_raised.pos[0] == 7:
+                                promoting = [True,piece_raised,pcd,old_pos]
+                            else:
+                                board.reset_lm()
+                                print(board)
+                                print(repr(board))
+                        else:
+                            board.reset_lm()
                             print(board)
                             print(repr(board))
                         if rotate:
@@ -1416,8 +1423,7 @@ while running:
                         else:
                             board.reset_lm()
                         check = board.check(noturn)
-                    piece_raised = 0
-                    if game_over() and not promoting[0]:
+                    elif game_over() and not promoting[0]:
                         if check[0]:
                             if color_turn[noturn] == WHITE:
                                 score[0] = score[0] + 1
@@ -1426,6 +1432,7 @@ while running:
                         else:
                             score[0] = score[0] + 0.5
                             score[1] = score[1] + 0.5
+                    piece_raised = 0
                     board.reset()
                     if promoting[0]:
                         board.promote(promoting[1].pos,promoting[1].color)
@@ -1462,3 +1469,4 @@ while running:
                         arws.remove(get_arw((x,y),(i,j)))
                         board.reset()
                 pygame.display.update()
+    clock.tick(60)
