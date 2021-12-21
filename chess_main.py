@@ -803,8 +803,8 @@ class Piece:
 class Arrows:
     def __init__(self,color:tuple,p1:list,p2:list):
         self.color = color
-        self.bottom = p1
-        self.top = p2
+        self.bottom = (p1[1],p1[0])
+        self.top = (p2[1],p2[0])
 
     def draw(self):
         (ax,ay) = (self.bottom[0]*80+40,self.bottom[1]*80+40)
@@ -812,13 +812,22 @@ class Arrows:
         vec = (ax-bx,ay-by)
         invec = (-vec[1], vec[0])
         norm = ((ax-bx)**2+(ay-by)**2)**0.5
-        dist = 20*3**0.5
         scal1 = (vec[0]/norm, vec[1]/norm)
         scal2 = (invec[0]/norm, invec[1]/norm)
+        if self.top[0]-self.bottom[0] == self.top[1]-self.bottom[1]:
+            c1 = 44
+            c2 = 49
+        elif self.bottom[0]-self.top[0] == self.top[1]-self.bottom[1]:
+            c1 = 44
+            c2 = 49
+        else:
+            c1 = 37
+            c2 = 42
+        c3 = 3
         p1 = (ax,ay)
-        p2 = (bx+30*scal1[0],by+30*scal1[1])
-        p3 = (bx+dist*scal1[0]-5*scal2[0],by+dist*scal1[1]-5*scal2[1])
-        p4 = (bx+dist*scal1[0]+5*scal2[0],by+dist*scal1[1]+5*scal2[1])
+        p2 = (bx+c1*scal1[0],by+c1*scal1[1])
+        p3 = (bx+c2*scal1[0]-c3*scal2[0],by+c2*scal1[1]-c3*scal2[1])
+        p4 = (bx+c2*scal1[0]+c3*scal2[0],by+c2*scal1[1]+c3*scal2[1])
         pygame.draw.aaline(screen, self.color, p1, p2, 1)
         pygame.draw.aaline(screen, self.color, p2, p3, 1)
         pygame.draw.aaline(screen, self.color, p2, p4, 1)
@@ -1317,7 +1326,7 @@ while running:
                         piece_raised.capture([j,i],board,True)
                     if not old_pos == piece_raised.pos:
                         nt = orientation
-                        m_arw = Arrows(color_turn[noturn],(old_pos[1],old_pos[0]),(piece_raised.pos[1],piece_raised.pos[0]))
+                        m_arw = Arrows(color_turn[noturn],old_pos,piece_raised.pos)
                         if not promoting[0]:
                             print(board)
                             print(repr(board))
@@ -1394,7 +1403,7 @@ while running:
                         piece_raised.capture([j,i],board,False)
                     if not old_pos == piece_raised.pos:
                         nt = orientation
-                        m_arw = Arrows(color_turn[noturn],(old_pos[1],old_pos[0]),(piece_raised.pos[1],piece_raised.pos[0]))
+                        m_arw = Arrows(color_turn[noturn],old_pos,piece_raised.pos)
                         if not promoting[0]:
                             print(board)
                             print(repr(board))
@@ -1448,12 +1457,12 @@ while running:
                         board.reset()
                 else:
                     if get_arw((y,x),(j,i)) == None:
-                        arw = Arrows(LGREEN,(y,x),(j,i))
+                        arw = Arrows(LGREEN,(x,y),(i,j))
                         arws.append(arw)
                         arws[cnt_arws].draw()
                         cnt_arws += 1
                     else:
                         cnt_arws += -1
-                        arws.remove(get_arw((y,x),(j,i)))
+                        arws.remove(get_arw((x,y),(i,j)))
                         board.reset()
                 pygame.display.update()
