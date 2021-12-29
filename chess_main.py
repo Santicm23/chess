@@ -5,7 +5,7 @@
 
 #|   ++++   Importaciones e inicio de pygame y su pantalla   ++++   |#
 
-import pygame, sys, time
+import pygame, sys
 from pygame.locals import *
 pygame.init()
 screen = pygame.display.set_mode((640,640))
@@ -221,9 +221,12 @@ def display_menu():
 
 #|   ++++   Clase tablero   ++++   |#
 
-class Board:
+class Board(pygame.sprite.Sprite):
     def __init__(self,brd:str):#creacion de la posicion inicial
+        super().__init__()
         self.position = fen(brd)
+        self.image = pygame.Surface((640,640))
+        self.rect = self.image.get_rect()
 
     def __str__(self) -> str:
 
@@ -320,8 +323,6 @@ class Board:
                     (i1,j1) = (7-i,7-j)
                 if promoting[0] and rotate:
                     (i1,j1) = (7-i1,7-j1)
-                if not self.position[j1][i1] == 0:
-                    self.position[j1][i1].draw(i*80,j*80)
         reset_draws()
         if game_over() and not promoting[0]:
             self.finish_game()
@@ -371,27 +372,27 @@ class Board:
             (x,y) = (7-xp,7-yp)
         if xp % 2 and yp % 2 or (xp-1) % 2 and (yp-1) % 2:
             if mode == 0:
-                pygame.draw.rect(screen, c2, (yp*80, xp*80, 80, 80))
+                pygame.draw.rect(self.image, c2, (yp*80, xp*80, 80, 80))
             elif mode == 1:
-                pygame.draw.rect(screen, BLACK, (yp*80, xp*80, 80, 80))
+                pygame.draw.rect(self.image, BLACK, (yp*80, xp*80, 80, 80))
             if xp == 7:
                 ltr=font.render(columnes[y],1,WHITE)
-                screen.blit(ltr,(71+yp*80, 67+xp*80))
+                self.image.blit(ltr,(71+yp*80, 67+xp*80))
             elif yp == 0:
                 nbr=font.render(lines[x],1,WHITE)
-                screen.blit(nbr,(2+yp*80, xp*80+2))
+                self.image.blit(nbr,(2+yp*80, xp*80+2))
         else:
             if mode == 0:
-                pygame.draw.rect(screen, c1, (yp*80, xp*80, 80, 80))
+                pygame.draw.rect(self.image, c1, (yp*80, xp*80, 80, 80))
             elif mode == 1:
-                pygame.draw.rect(screen, BLACK, (yp*80, xp*80, 80, 80))
-                screen.blit(bsq,(yp*80,xp*80))
+                pygame.draw.rect(self.image, BLACK, (yp*80, xp*80, 80, 80))
+                self.image.blit(bsq,(yp*80,xp*80))
             if xp == 7:
                 ltr=font.render(columnes[y],1,WHITE)
-                screen.blit(ltr,(71+yp*80, 67+xp*80))
+                self.image.blit(ltr,(71+yp*80, 67+xp*80))
             if yp == 0:
                 nbr=font.render(lines[x],1,WHITE)
-                screen.blit(nbr,(2+yp*80, xp*80+2))
+                self.image.blit(nbr,(2+yp*80, xp*80+2))
 
     def reset_zone(self,pos):#repintar una zona del tablero de 9x9 para el movimiento correcto de las piezas
         (i,j) = pos
@@ -574,9 +575,10 @@ class Board:
 
 #|   ++++   Clase piezas   ++++   |#
 
-class Piece:
+class Piece(pygame.sprite.Sprite):
     def __init__(self,img:pygame.Surface,color:tuple,piece:int,pos:list):#*#info general de pieza,
     #*# Tipo de pieza: 0 <=> nada, 1 <=> peon, 2 <=> caballo, 3 <=> alfil, 4 <=> torre, 5 <=> reina, 6 <=> rey
+        super().__init__()
         self.image = img
         self.image2 = None
         self.pos = pos
@@ -586,6 +588,7 @@ class Piece:
         if piece>0 and piece<7:
             self.type = piece
         self.lm = []
+        self.rect = img.get_rect(topleft = (pos[1]*80,pos[0]*80))
 
     def __repr__(self) -> str:
         if self.color == WHITE:
@@ -665,24 +668,28 @@ class Piece:
                             (dr_x,dr_y) = (-dr_x,-dr_y)
                             (frx,fry) = (7-frx,7-fry)
                     for i in range (frames+1):
-                        new_board.reset_zone((px,py))
+                        boardgroup.draw(screen)
+                        piecegroup.draw(screen)
                         if cstl:
-                            new_board.reset_zone((rx,ry))
                             ry = fry + dr_x * i
                             rx = frx + dr_y * i
-                            rook.draw(rx*80,ry*80)
+                            rook.update((rx*80,ry*80))
                         py = fpy + distance_x * i
                         px = fpx + distance_y * i
-                        self.draw(px*80,py*80)
+                        self.update((px*80,py*80))
+                        boardgroup.draw(screen)
+                        piecegroup.draw(screen)
                         pygame.display.update()
                         if i == frames*2/3:
                             move_sound.play()
                         clock.tick(60)
                 new_board.set_piece(columnes[new_pos[1]],lines[new_pos[0]],self)
+                self.update((new_pos[1]*80,new_pos[0]*80))
                 if cstl:
                     new_board.set_piece(columnes[rm[0][1]],lines[rm[0][0]],rook)
+                    rook.update((rm[0][1]*80,rm[0][0]*80))
                     if not anim:
-                        time.sleep(delay)
+                        pygame.time.delay(delay*1000)
                     move_sound.play()
                 if self.color == WHITE:
                     (turn,noturn)=(1,0)
@@ -732,21 +739,25 @@ class Piece:
                         (distance_x,distance_y) = (-distance_x,-distance_y)
                         (fpx,fpy) = (7-fpx,7-fpy)
                     for i in range (frames+1):
-                        new_board.reset_zone((px,py))
+                        boardgroup.draw(screen)
+                        piecegroup.draw(screen)
                         py = fpy + distance_x * i
                         px = fpx + distance_y * i
-                        self.draw(px*80,py*80)
+                        self.update((px*80,py*80))
                         pygame.display.update()
                         if i == frames/2:
                             move_sound.play()
                             capture_sound.play()
                         clock.tick(60)
                 new_board.set_piece(columnes[new_pos[1]],lines[new_pos[0]],self)
+                self.update((new_pos[1]*80,new_pos[0]*80))
                 if self.color == WHITE:
                     (turn,noturn)=(1,0)
+                    pd.kill()
                     del Bpieces[Bpieces.index(pd)]
                 elif self.color == BLACK:
                     (turn,noturn)=(0,1)
+                    pd.kill()
                     del Wpieces[Wpieces.index(pd)]
                 last_cpm = 0
                 if turn == 0:
@@ -790,6 +801,8 @@ class Piece:
         if not self.image2 == None:
             screen.blit(self.image2,(i,j))
 
+    def update(self,pos):
+        self.rect = self.image.get_rect(topleft = (pos[0],pos[1]))
 
 #|   ++++   Clase flechas   ++++   |#
 
@@ -1089,6 +1102,15 @@ board = Board(brd)
 lines = ['8','7','6','5','4','3','2','1']
 columnes = ['a','b','c','d','e','f','g','h']
 
+#groups
+
+boardgroup = pygame.sprite.GroupSingle()
+boardgroup.add(board)
+
+piecegroup = pygame.sprite.Group()
+for ps in Pieces:
+    piecegroup.add(ps)
+
 #|   ++++   variables en posicion inicial  ++++   |#
 
 mode = 0
@@ -1132,6 +1154,8 @@ print(board)
 print(repr(board))
 board.reset_lm()
 board.reset()
+boardgroup.draw(screen)
+piecegroup.draw(screen)
 display_menu()
 pygame.display.update()
 
@@ -1151,18 +1175,15 @@ while running:
             (I,J) = (7-i,7-j)
         if not move:
             (m1,m2) = pos
-            M1 = int(m1/80)
-            M2 = int(m2/80)
-            board.reset_zone((M1,M2))
-            board.show_lm(piece_raised)
-            if M1 < I+2 and M1 > I-2 and M2 < J+2 and M2 > J-2:
-                screen.blit(r_sq,(I*80,J*80))
+        boardgroup.draw(screen)
+        piecegroup.draw(screen)
+        board.show_lm(piece_raised)
+        screen.blit(r_sq,(I*80,J*80))
         if len(mouse_sq) == 2 and not mouse_sq == (N,M):
             (a,b) = mouse_sq
             (a1,b1) = mouse_sq
             if (rotate and fo == noturn) or (not rotate and fo == 1):
                 (a1,b1) = (7-a1,7-b1)
-            board.reset_sq((a1,b1),GREY,LGREY)
             if mselect == mp:
                 screen.blit(mp,(b1*80+30,a1*80+30))
             elif mselect == cp:
@@ -1170,14 +1191,19 @@ while running:
                 if not board.position[a][b] == 0:
                     board.position[a][b].draw(b1*80,a1*80)
         if [N,M] in piece_raised.lm:
-            board.reset_sq((n,m),GREY,LGREY)
+            boardgroup.draw(screen)
+            piecegroup.draw(screen)
+            board.show_lm(piece_raised)
+            screen.blit(r_sq,(I*80,J*80))
             mselect = mp
             if not board.position[N][M] == 0:
-                board.position[N][M].draw(m*80,n*80)
                 mselect = cp
             screen.blit(ms_mp,(m*80,n*80))
             mouse_sq = [N,M]
-        if not move:
+        if move:
+            (a,b) = piece_raised.pos
+            piece_raised.draw(b*80,a*80)
+        else:
             piece_raised.draw(m1-40,m2-40)
         pygame.display.update()
     for event in pygame.event.get():
@@ -1258,7 +1284,9 @@ while running:
                             (turn,noturn)=(1,0)
                     promoting = [False,None,None,None]
                     board.reset_lm()
-                    board.reset()
+                    boardgroup.draw(screen)
+                    piecegroup.draw(screen)
+                    pygame.display.update()
                     print(board)
                     print(repr(board))
                 elif game_over():#interfaz de fin de juego
@@ -1279,23 +1307,29 @@ while running:
                     (i,j) = Pos
                     if 190<i and i<310:
                         if 390<j and j<430:
+                            mode = 0
                             board.restart()
                             turn = 0
                             noturn = 1
                             board.reset_lm()
-                            mode = 0
                             menu = False
                             board.reset()
+                            boardgroup.draw(screen)
+                            piecegroup.draw(screen)
+                            pygame.display.update()
                     elif 330<i and i<450:
                         if 390<j and j<430:
+                            mode = 1
                             board.restart()
                             turn = 0
                             noturn = 1
                             board.reset_lm()
-                            mode = 1
                             menu = False
                             change_font()
                             board.reset()
+                            boardgroup.draw(screen)
+                            piecegroup.draw(screen)
+                            pygame.display.update()
                 elif piece_raised == 0:#levantar pieza (1° click)
                     if (rotate and fo == noturn) or (not rotate and fo == 1):
                         (i,j) = (7-i,7-j)
@@ -1306,6 +1340,8 @@ while running:
                             piece_raised = 0
                         if board.position[j][i].color == color_turn[turn]:#saber cuando la pieza este en el aire
                             piece_raised.rsrch_lm(board)
+                            board.show_lm(piece_raised)
+                            screen.blit(r_sq,(i*80,j*80))
                 else:#colocar pieza(2° click)
                     (I,J) = (i,j)
                     if (rotate and fo == noturn) or (not rotate and fo == 1):
@@ -1357,13 +1393,19 @@ while running:
                                 pygame.display.update()
                             else:
                                 piece_raised = 0
-                                board.reset()
+                                boardgroup.draw(screen)
+                                piecegroup.draw(screen)
+                                pygame.display.update()
                         else:
                             piece_raised = 0
-                            board.reset()
+                            boardgroup.draw(screen)
+                            piecegroup.draw(screen)
+                            pygame.display.update()
                     else:
                         piece_raised = 0
-                        board.reset()
+                        boardgroup.draw(screen)
+                        piecegroup.draw(screen)
+                        pygame.display.update()
                     if promoting[0]:
                         board.promote(promoting[1].pos,promoting[1].color)
                     move = False
@@ -1384,7 +1426,8 @@ while running:
                     old_pos = piece_raised.pos
                     if [j,i] == piece_raised.pos:
                         move = True
-                        board.reset_zone((I,J))
+                        boardgroup.draw(screen)
+                        piecegroup.draw(screen)
                         screen.blit(r_sq,(I*80,J*80))
                         board.position[j][i].draw(I*80,J*80)
                         board.show_lm(piece_raised)
@@ -1433,7 +1476,9 @@ while running:
                             score[0] = score[0] + 0.5
                             score[1] = score[1] + 0.5
                     piece_raised = 0
-                    board.reset()
+                    boardgroup.draw(screen)
+                    piecegroup.draw(screen)
+                    pygame.display.update()
                     if promoting[0]:
                         board.promote(promoting[1].pos,promoting[1].color)
                     move = False      
