@@ -217,6 +217,11 @@ def display_menu():
     title = font2.render("Menu", 1, WHITE)
     screen.blit(title,(275,200))
 
+def reset():
+    boardgroup.draw(screen)
+    piecegroup.draw(screen)
+    reset_draws()
+
 #|      ~~~~~      Clases      ~~~~~      |#
 
 #|   ++++   Clase tablero   ++++   |#
@@ -323,9 +328,6 @@ class Board(pygame.sprite.Sprite):
                     (i1,j1) = (7-i,7-j)
                 if promoting[0] and rotate:
                     (i1,j1) = (7-i1,7-j1)
-        reset_draws()
-        if game_over() and not promoting[0]:
-            self.finish_game()
         pygame.display.update()
 
     def show_lm(self,piece):#mostrar jugadas posibles de la pieza seleccionada
@@ -569,9 +571,12 @@ class Board(pygame.sprite.Sprite):
             if p.color == WHITE:
                 if not p in Wpieces:
                     Wpieces.append(p)
+                    piecegroup.add(p)
             elif p.color == BLACK:
                 if not p in Bpieces:
                     Bpieces.append(p)
+                    piecegroup.add(p)
+            p.update((x*80,y*80))
 
 #|   ++++   Clase piezas   ++++   |#
 
@@ -1154,8 +1159,7 @@ print(board)
 print(repr(board))
 board.reset_lm()
 board.reset()
-boardgroup.draw(screen)
-piecegroup.draw(screen)
+reset()
 display_menu()
 pygame.display.update()
 
@@ -1175,8 +1179,7 @@ while running:
             (I,J) = (7-i,7-j)
         if not move:
             (m1,m2) = pos
-        boardgroup.draw(screen)
-        piecegroup.draw(screen)
+        reset()
         board.show_lm(piece_raised)
         screen.blit(r_sq,(I*80,J*80))
         if len(mouse_sq) == 2 and not mouse_sq == (N,M):
@@ -1191,8 +1194,7 @@ while running:
                 if not board.position[a][b] == 0:
                     board.position[a][b].draw(b1*80,a1*80)
         if [N,M] in piece_raised.lm:
-            boardgroup.draw(screen)
-            piecegroup.draw(screen)
+            reset()
             board.show_lm(piece_raised)
             screen.blit(r_sq,(I*80,J*80))
             mselect = mp
@@ -1284,8 +1286,7 @@ while running:
                             (turn,noturn)=(1,0)
                     promoting = [False,None,None,None]
                     board.reset_lm()
-                    boardgroup.draw(screen)
-                    piecegroup.draw(screen)
+                    reset()
                     pygame.display.update()
                     print(board)
                     print(repr(board))
@@ -1293,11 +1294,15 @@ while running:
                     (i,j) = Pos
                     if 190<i and i<310:
                         if 390<j and j<430:
+                            m_arw = 0
                             board.restart()
                             turn = 0
                             noturn = 1
+                            check = board.check(noturn)
                             board.reset_lm()
                             board.reset()
+                            reset()
+                            pygame.display.update()
                     elif 330<i and i<450:
                         if 390<j and j<430:
                             pygame.quit()
@@ -1308,27 +1313,23 @@ while running:
                     if 190<i and i<310:
                         if 390<j and j<430:
                             mode = 0
-                            board.restart()
                             turn = 0
                             noturn = 1
                             board.reset_lm()
                             menu = False
                             board.reset()
-                            boardgroup.draw(screen)
-                            piecegroup.draw(screen)
+                            reset()
                             pygame.display.update()
                     elif 330<i and i<450:
                         if 390<j and j<430:
                             mode = 1
-                            board.restart()
                             turn = 0
                             noturn = 1
                             board.reset_lm()
                             menu = False
                             change_font()
                             board.reset()
-                            boardgroup.draw(screen)
-                            piecegroup.draw(screen)
+                            reset()
                             pygame.display.update()
                 elif piece_raised == 0:#levantar pieza (1° click)
                     if (rotate and fo == noturn) or (not rotate and fo == 1):
@@ -1372,16 +1373,7 @@ while running:
                             orientation = turn
                             nt = noturn
                         check = board.check(noturn)
-                    if game_over() and not promoting[0]:
-                        if check[0]:
-                            if color_turn[noturn] == WHITE:
-                                score[0] = score[0] + 1
-                            elif color_turn[noturn] == BLACK:
-                                score[1] = score[1] + 1
-                        else:
-                            score[0] = score[0] + 0.5
-                            score[1] = score[1] + 0.5
-                    elif not board.position[j][i] == 0:
+                    if not board.position[j][i] == 0:
                         if board.position[j][i].color == piece_raised.color:
                             if not board.position[j][i] == piece_raised:
                                 board.reset()
@@ -1393,21 +1385,29 @@ while running:
                                 pygame.display.update()
                             else:
                                 piece_raised = 0
-                                boardgroup.draw(screen)
-                                piecegroup.draw(screen)
+                                reset()
                                 pygame.display.update()
                         else:
                             piece_raised = 0
-                            boardgroup.draw(screen)
-                            piecegroup.draw(screen)
+                            reset()
                             pygame.display.update()
                     else:
                         piece_raised = 0
-                        boardgroup.draw(screen)
-                        piecegroup.draw(screen)
+                        reset()
                         pygame.display.update()
                     if promoting[0]:
                         board.promote(promoting[1].pos,promoting[1].color)
+                    elif game_over():
+                        if check[0]:
+                            if color_turn[noturn] == WHITE:
+                                score[0] = score[0] + 1
+                            elif color_turn[noturn] == BLACK:
+                                score[1] = score[1] + 1
+                        else:
+                            score[0] = score[0] + 0.5
+                            score[1] = score[1] + 0.5
+                        board.finish_game()
+                        pygame.display.update()
                     move = False
             elif event.button == BUTTON_RIGHT and not menu:
                 (y,x)=event.pos
@@ -1426,8 +1426,7 @@ while running:
                     old_pos = piece_raised.pos
                     if [j,i] == piece_raised.pos:
                         move = True
-                        boardgroup.draw(screen)
-                        piecegroup.draw(screen)
+                        reset()
                         screen.blit(r_sq,(I*80,J*80))
                         board.position[j][i].draw(I*80,J*80)
                         board.show_lm(piece_raised)
@@ -1466,6 +1465,11 @@ while running:
                         else:
                             board.reset_lm()
                         check = board.check(noturn)
+                    piece_raised = 0
+                    reset()
+                    pygame.display.update()
+                    if promoting[0]:
+                        board.promote(promoting[1].pos,promoting[1].color)
                     elif game_over() and not promoting[0]:
                         if check[0]:
                             if color_turn[noturn] == WHITE:
@@ -1475,12 +1479,8 @@ while running:
                         else:
                             score[0] = score[0] + 0.5
                             score[1] = score[1] + 0.5
-                    piece_raised = 0
-                    boardgroup.draw(screen)
-                    piecegroup.draw(screen)
-                    pygame.display.update()
-                    if promoting[0]:
-                        board.promote(promoting[1].pos,promoting[1].color)
+                        board.finish_game()
+                        pygame.display.update()
                     move = False      
             elif event.button == BUTTON_RIGHT and not menu:
                 if not piece_raised == 0:
