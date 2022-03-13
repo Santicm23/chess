@@ -85,6 +85,7 @@ def change_font():
             ps.image2 = chessfont.render("q", 1, WHITE)
         elif ps.type == 6:
             ps.image2 = chessfont.render("k", 1, WHITE)
+        ps.image.blit(ps.image2,(0,0))
 
 #|   ++++   Principales   ++++   |#
 
@@ -323,41 +324,21 @@ class Board(pygame.sprite.Sprite):
         for j in range (8):
             for i in range (8):
                 self.reset_sq((j,i),GREY,LGREY)
-                (i1,j1) = (i,j)
-                if (rotate and fo == noturn) or (not rotate and fo == 1):
-                    (i1,j1) = (7-i,7-j)
-                if promoting[0] and rotate:
-                    (i1,j1) = (7-i1,7-j1)
         pygame.display.update()
 
     def show_lm(self,piece):#mostrar jugadas posibles de la pieza seleccionada
-       for m in piece.lm:
+        for m in piece.lm:
             (i,j) = m
             (i1,j1) = (i,j)
             if (rotate and fo == noturn) or (not rotate and fo == 1):
                 (i1,j1) = (7-i, 7-j)
             if move_posible(piece,[i,j],turn,self) or lm_castle(piece,[i,j],turn,self):
-                self.reset_sq([i1,j1],GREY,LGREY)
                 screen.blit(mp,(j1*80+30,i1*80+30))
             elif capture_posible(piece,[i,j],turn,self):
                 if not self.position[i][j] == 0:
-                    if check[0]:
-                        if piece.type == 6 or [i,j] == check[1].pos:
-                            self.reset_sq([i1,j1],GREY,LGREY)
-                            self.position[i][j].draw(j1*80,i1*80)
-                            screen.blit(cp,(j1*80,i1*80))
-                    elif not check[0]:
-                        self.reset_sq([i1,j1],GREY,LGREY)
-                        self.position[i][j].draw(j1*80,i1*80)
-                        screen.blit(cp,(j1*80,i1*80))
-            if en_passant(piece,[i,j],turn,self):
-                if check[0]:
-                    if [i,j] == check[1].pos:
-                        self.reset_sq([i1,j1],GREY,LGREY)
-                        self.position[i][j].draw(j1*80,i1*80)
-                        screen.blit(mp,(j1*80+30,i1*60+30))
-                elif not check[0]:
-                    self.reset_sq([i1,j1],GREY,LGREY)
+                    self.position[i][j].draw(j1*80,i1*80)
+                    screen.blit(cp,(j1*80,i1*80))
+                else:
                     screen.blit(mp,(j1*80+30,i1*80+30))
 
     def reset_lm(self):#resetear las jugadas posibles de todas la piezas presentes en el tablero
@@ -396,61 +377,6 @@ class Board(pygame.sprite.Sprite):
                 nbr=font.render(lines[x],1,WHITE)
                 self.image.blit(nbr,(2+yp*80, xp*80+2))
 
-    def reset_zone(self,pos):#repintar una zona del tablero de 9x9 para el movimiento correcto de las piezas
-        (i,j) = pos
-        if i-int(i)>=0.5:
-            i = int(i+1)
-        elif i-int(i)<-0.5:
-            i = int(i-1)
-        else:
-            i = int(i)
-        if j-int(j)>=0.5:
-            j = int(j+1)
-        elif j-int(j)<-0.5:
-            j = int(j-1)
-        else:
-            j = int(j)
-        (i1,j1) = (i,j)
-        nxt = 1
-        if (rotate and fo == noturn) or (not rotate and fo == 1):
-            (i1,j1) = (7-i, 7-j)
-            nxt = -1
-        board.reset_sq((j,i),GREY,LGREY)
-        if not self.position[j1][i1] == 0:
-            self.position[j1][i1].draw(i*80,j*80)
-        if not i == 7:
-            board.reset_sq((j,i+1),GREY,LGREY)
-            if not self.position[j1][i1+nxt] == 0:
-                self.position[j1][i1+nxt].draw((i+1)*80,j*80)
-        if not j == 7:
-            board.reset_sq((j+1,i),GREY,LGREY)
-            if not self.position[j1+nxt][i1] == 0:
-                self.position[j1+nxt][i1].draw(i*80,(j+1)*80)
-        if not i == 0:
-            board.reset_sq((j,i-1),GREY,LGREY)
-            if not self.position[j1][i1-nxt] == 0:
-                self.position[j1][i1-nxt].draw((i-1)*80,j*80)
-        if not j == 0:
-            board.reset_sq((j-1,i),GREY,LGREY)
-            if not self.position[j1-nxt][i1] == 0:
-                self.position[j1-nxt][i1].draw(i*80,(j-1)*80)
-        if not i == 7 and not j == 7:
-            board.reset_sq((j+1,i+1),GREY,LGREY)
-            if not self.position[j1+nxt][i1+nxt] == 0:
-                self.position[j1+nxt][i1+nxt].draw((i+1)*80,(j+1)*80)
-        if not i == 0 and not j == 0:
-            board.reset_sq((j-1,i-1),GREY,LGREY)
-            if not self.position[j1-nxt][i1-nxt] == 0:
-                self.position[j1-nxt][i1-nxt].draw((i-1)*80,(j-1)*80)
-        if not i == 0 and not j == 7:
-            board.reset_sq((j+1,i-1),GREY,LGREY)
-            if not self.position[j1+nxt][i1-nxt] == 0:
-                self.position[j1+nxt][i1-nxt].draw((i-1)*80,(j+1)*80)
-        if not i == 7 and not j == 0:
-            board.reset_sq((j-1,i+1),GREY,LGREY)
-            if not self.position[j1-nxt][i1+nxt] == 0:
-                self.position[j1-nxt][i1+nxt].draw((i+1)*80,(j-1)*80)
-
     def check(self,t):#detenerminar si hay Jaque en la posicion
         tc=[False,None]
         counter=0
@@ -469,15 +395,6 @@ class Board(pygame.sprite.Sprite):
         else:
             tc.append(False)
         return tc
-
-    def next_pos_check(self,new_pos,piece):#calcular si en la jugada designada el rey es capturable
-        (x,y) = new_pos
-        new_b = Board(self.position,self.wp,self.bp)
-        new_b.position[piece.pos[0]][piece.pos[1]] = 0
-        new_b.set_piece(columnes[y],lines[x],piece)
-        next_check = new_b.check(turn)
-        if next_check[0]:
-            return True
 
     def promote(self,new_pos,color):#mostrar recuadro de pizas para elegir que pieza coronar
         (c,r) = new_pos
@@ -590,8 +507,8 @@ class Piece(pygame.sprite.Sprite):
         self.start_pos = pos
         if color == WHITE or color == BLACK:
             self.color = color
-        if piece>0 and piece<7:
-            self.type = piece
+        assert piece>0 and piece<7
+        self.type = piece
         self.lm = []
         self.rect = img.get_rect(topleft = (pos[1]*80,pos[0]*80))
 
@@ -694,7 +611,7 @@ class Piece(pygame.sprite.Sprite):
                     new_board.set_piece(columnes[rm[0][1]],lines[rm[0][0]],rook)
                     rook.update((rm[0][1]*80,rm[0][0]*80))
                     if not anim:
-                        pygame.time.delay(delay*1000)
+                        pygame.time.delay(int(delay*400))
                     move_sound.play()
                 if self.color == WHITE:
                     (turn,noturn)=(1,0)
@@ -718,7 +635,7 @@ class Piece(pygame.sprite.Sprite):
             px = self.pos[1]
             if new_pos in self.lm:
                 pd = new_board.position[new_pos[0]][new_pos[1]]
-                if pd.type == 4:
+                if not pd == 0 and pd.type == 4:
                     if pd.color == WHITE:
                         if pd.start_pos[1] == 0:
                             rc_Q = False
@@ -770,41 +687,45 @@ class Piece(pygame.sprite.Sprite):
 
     def rsrch_lm(self,new_board):#*#calcular jugadas posibles de la pieza misma y guradarlas en una lista
         (y,x) = self.pos
-        moves = []
+        self.lm = []
         for i in range (8):
             for j in range(8):
-                if not self == 0 and move_posible(self,[i,j],turn,new_board) or lm_castle(self,[i,j],turn,new_board):
+                if move_posible(self,[i,j],turn,new_board) or lm_castle(self,[i,j],turn,new_board):
                     new_board.position[self.pos[0]][self.pos[1]] = 0
                     new_board.set_piece(columnes[j],lines[i],self)
                     ilegal = new_board.check(noturn)
                     if not ilegal[0]:
-                        moves.append([i,j])
+                        self.lm.append([i,j])
                     new_board.position[self.pos[0]][self.pos[1]] = 0
                     new_board.set_piece(columnes[x],lines[y],self)
-                elif not self == 0 and capture_posible(self,[i,j],turn,new_board):
+                elif capture_posible(self,[i,j],turn,new_board):
                     if not new_board.position[i][j] == 0:
                         pd = new_board.position[i][j]
                         new_board.position[self.pos[0]][self.pos[1]] = 0
                         new_board.set_piece(columnes[j],lines[i],self)
                         ilegal = new_board.check(noturn)
                         if not ilegal[0]:
-                            moves.append([i,j])
+                            self.lm.append([i,j])
                         new_board.set_piece(columnes[x],lines[y],self)
                         new_board.set_piece(columnes[j],lines[i],pd)
-                if not self == 0 and en_passant(self,[i,j],turn,new_board):
-                    new_board.position[self.pos[0]][self.pos[1]] = 0
-                    new_board.set_piece(columnes[j],lines[i],self)
-                    ilegal = new_board.check(noturn)
-                    if not ilegal[0]:
-                        moves.append([i,j])
-                    new_board.position[self.pos[0]][self.pos[1]] = 0
-                    new_board.set_piece(columnes[x],lines[y],self)
-        self.lm = moves
+                    elif en_passant(self,[i,j],turn,new_board):
+                        if self.color == WHITE:
+                            a,b = i+1,j
+                        else:
+                            a,b = i-1,j
+                        pd = new_board.position[a][b]
+                        new_board.position[a][b] = 0
+                        new_board.position[self.pos[0]][self.pos[1]] = 0
+                        new_board.set_piece(columnes[j],lines[i],self)
+                        ilegal = new_board.check(noturn)
+                        if not ilegal[0]:
+                            self.lm.append([i,j])
+                        new_board.position[a][b] = pd
+                        new_board.position[self.pos[0]][self.pos[1]] = 0
+                        new_board.set_piece(columnes[x],lines[y],self)
 
     def draw(self,i,j):
         screen.blit(self.image,(i,j))
-        if not self.image2 == None:
-            screen.blit(self.image2,(i,j))
 
     def update(self,pos):
         self.rect = self.image.get_rect(topleft = (pos[0],pos[1]))
@@ -1142,7 +1063,6 @@ promoting = [False,None,None,None]
 en_pssnt = [False,None]
 mouse_sq = []
 
-psr = 0
 cnt = 0
 
 m_arw = 0
@@ -1309,33 +1229,23 @@ while running:
                             running = False
                             sys.exit()
                 elif menu:
+                    menu = False
                     (i,j) = Pos
-                    if 190<i and i<310:
-                        if 390<j and j<430:
-                            mode = 0
-                            turn = 0
-                            noturn = 1
-                            board.reset_lm()
-                            menu = False
-                            board.reset()
-                            reset()
-                            pygame.display.update()
-                    elif 330<i and i<450:
-                        if 390<j and j<430:
-                            mode = 1
-                            turn = 0
-                            noturn = 1
-                            board.reset_lm()
-                            menu = False
-                            change_font()
-                            board.reset()
-                            reset()
-                            pygame.display.update()
+                    turn = 0
+                    noturn = 1
+                    if (190<i and i<310) and (390<j and j<430):
+                        mode = 0
+                    elif (330<i and i<450) and (390<j and j<430):
+                        mode = 1
+                        change_font()
+                    board.reset_lm()
+                    board.reset()
+                    reset()
+                    pygame.display.update()
                 elif piece_raised == 0:#levantar pieza (1° click)
                     if (rotate and fo == noturn) or (not rotate and fo == 1):
                         (i,j) = (7-i,7-j)
                     if not board.position[j][i] == 0:
-                        psr = piece_raised
                         piece_raised = board.position[j][i]#saber cual pieza y su posicion
                         if piece_raised.color == color_turn[noturn]:
                             piece_raised = 0
