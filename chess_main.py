@@ -108,18 +108,7 @@ def rect_circle(color,x,y,lo,la):#*#dibujar un rectangulo con esquinas onduladas
 
 def change_font():
     for ps in Bpieces:
-        if ps.type == 1:
-            ps.image2 = chessfont.render("p", 1, WHITE)
-        elif ps.type == 2:
-            ps.image2 = chessfont.render("n", 1, WHITE)
-        elif ps.type == 3:
-            ps.image2 = chessfont.render("b", 1, WHITE)
-        elif ps.type == 4:
-            ps.image2 = chessfont.render("r", 1, WHITE)
-        elif ps.type == 5:
-            ps.image2 = chessfont.render("q", 1, WHITE)
-        elif ps.type == 6:
-            ps.image2 = chessfont.render("k", 1, WHITE)
+        ps.image2 = chessfont.render(types[ps.type-1], 1, WHITE)
         ps.image.blit(ps.image2,(0,0))
 
 def change_orintation(pov):
@@ -317,7 +306,7 @@ class Board(pygame.sprite.Sprite):
                     rt += '  ' + ' |'
                 elif self.position[i][j].color == WHITE:
                     rt += ' ' + types[self.position[i][j].type-1].capitalize() + ' |'
-                elif self.position[i][j].color == BLACK:
+                else:
                     rt += ' ' + types[self.position[i][j].type-1] + ' |'
             rt += '\n'
             rt += ln
@@ -373,17 +362,35 @@ class Board(pygame.sprite.Sprite):
         self.position[x][y] = piece
 
     def reset(self):#reiniciar el tablero según el turno y la orientación indicada
-        for j in range (8):
+        if mode == 0:
+            pygame.draw.rect(self.image, LGREY, (0, 0, 640, 640))
             for i in range (8):
-                self.reset_sq((j,i),GREY,LGREY)
-        pygame.display.update()
+                for j in range ((i-1)%2, 8, 2):
+                    pygame.draw.rect(self.image, GREY, (i*80, j*80, 80, 80))
+        else:
+            lsq = chessfont.render("+",1,GREY)
+            pygame.draw.rect(self.image, BLACK, (0, 0, 640, 640))
+            for i in range (8):
+                for j in range ((i)%2, 8, 2):
+                    self.image.blit(lsq,(i*80,j*80))
+        for l in range (8):
+            nbr=font.render(lines[l],1,WHITE)
+            l1=l
+            if orientation==1:
+                l1=7-l
+            self.image.blit(nbr,(2, l1*80+2))
+        for c in range (8):
+            ltr=font.render(columnes[c],1,WHITE)
+            c1=c
+            if orientation==1:
+                c1=7-c
+            self.image.blit(ltr,(71+c1*80, 67+7*80))
 
     def show_lm(self,piece):#mostrar jugadas posibles de la pieza seleccionada
         for m in piece.lm:
             (i,j) = m
             (i1,j1) = (i,j)
-            if orientation == 1:
-                (i1,j1) = (7-i, 7-j)
+            if orientation == 1: (i1,j1) = (7-i, 7-j)
             if move_posible(piece,[i,j],turn,self) or lm_castle(piece,[i,j],turn,self):
                 screen.blit(mp,(j1*80+30,i1*80+30))
             elif capture_posible(piece,[i,j],turn,self):
@@ -399,40 +406,10 @@ class Board(pygame.sprite.Sprite):
         for bp in Bpieces:
             bp.rsrch_lm(self)
 
-    def reset_sq(self,pos,c1,c2):#repinta una sola casilla del tablero
-        (xp, yp) = pos
-        (x,y) = pos
-        bsq = chessfont.render("+",1,GREY)
-        if orientation == 1:
-            (x,y) = (7-xp,7-yp)
-        if xp % 2 and yp % 2 or (xp-1) % 2 and (yp-1) % 2:
-            if mode == 0:
-                pygame.draw.rect(self.image, c2, (yp*80, xp*80, 80, 80))
-            elif mode == 1:
-                pygame.draw.rect(self.image, BLACK, (yp*80, xp*80, 80, 80))
-            if xp == 7:
-                ltr=font.render(columnes[y],1,WHITE)
-                self.image.blit(ltr,(71+yp*80, 67+xp*80))
-            elif yp == 0:
-                nbr=font.render(lines[x],1,WHITE)
-                self.image.blit(nbr,(2+yp*80, xp*80+2))
-        else:
-            if mode == 0:
-                pygame.draw.rect(self.image, c1, (yp*80, xp*80, 80, 80))
-            elif mode == 1:
-                pygame.draw.rect(self.image, BLACK, (yp*80, xp*80, 80, 80))
-                self.image.blit(bsq,(yp*80,xp*80))
-            if xp == 7:
-                ltr=font.render(columnes[y],1,WHITE)
-                self.image.blit(ltr,(71+yp*80, 67+xp*80))
-            if yp == 0:
-                nbr=font.render(lines[x],1,WHITE)
-                self.image.blit(nbr,(2+yp*80, xp*80+2))
-
     def check(self,t):#detenerminar si hay Jaque en la posicion
         tc=[False,None]
         counter=0
-        if color_turn[t] == WHITE:
+        if turn == 0:
             for piece in Wpieces:
                 if capture_posible(piece,k.pos,t,self):
                     tc=[True,piece]
