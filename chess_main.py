@@ -1,4 +1,4 @@
-#|-   -   -   -   -   -   -Codigo de Santiago Castro Muñoz (2021)-   -   -   -   -   -   -|#
+#|-   -   -   -   -   -   -Codigo de Santiago Castro Muñoz (2021-2022)-   -   -   -   -   -   -|#
 
 
 #|      ~~~~~      Inicio codigo (constantes)      ~~~~~      |#
@@ -30,6 +30,41 @@ GREEN = (107,142,35)
 LGREEN = (163,217,54)
 RED = (205,92,92)
 
+#|   ++++   variables en posicion inicial  ++++   |#
+
+running = True #Si el progrma esta corriendo
+mode = 0 #el modo en el que esta (0: jugar, 1: analisis)
+menu = True #si esta en el menu o no
+move = False #si la pieza seleccionada tiene que moverse o el usuario la arrastro
+check=[False,None] #datos del jaque [hay jaque?, que pieza?]
+clock = pygame.time.Clock() #reloj de pygame
+
+fps = 60 #fotos por segundo
+delay = 0.2 #delay del sonido en segundos
+frames = int(fps*delay) #fotos
+
+score = [0,0] #puntaje [puntos del blanco, puntos del negro]
+
+orientation = 0 #orinetation del juego 0:blanco, 1:negro
+fo = orientation #primera orientación
+rotate = True #rotar el tablero despues de cada jugada
+
+piece_raised = 0 #pieza seleccionada (levantada)
+pcd = None #pieza capturada
+
+promoting = [False,None,None,None] #datos de la coronación [coronacion?, peon coronando,
+#pieza capturada, posición anterior del peon]
+en_pssnt = [False,None] #datos de la captura al paso [captura al paso?, ]
+mouse_sq = []
+
+cnt = 0 #contador de jugadas
+
+m_arw = 0 #flecha del ultimo movimiento
+cnt_arws = 0 
+cnt_sqrs = 0
+arws = []
+sqrs = []
+
 #|   ++++   Imagenes de diseño   ++++   |#
 
 r_sq = pygame.image.load("imgs/raised_square.png").convert_alpha()
@@ -44,18 +79,18 @@ capture_sound = pygame.mixer.Sound("sounds/piece_capturing.mp3")
 
 #|   ++++   Variables principales   ++++   |#
 
-rc_Q = True
-rc_K = True
-rc_q = True
-rc_k = True
-turn = 0
-noturn = 0
-color_turn = [WHITE,BLACK]
-last_cpm = 0
+rc_Q = True #si las blancas pueden enrrocarse largo
+rc_K = True #si las blancas pueden enrrocarse corto
+rc_q = True #si las negras pueden enrrocarse largo
+rc_k = True #si las negras pueden enrrocarse corto
+turn = 0 #turno 0:blanco, 1:negro
+noturn = 0 #el opuesto del valor del turno
+color_turn = [WHITE,BLACK] #color según el turno
+last_cpm = 0 #cantidad de jugadas desde la última captura
 flcpm = 0
 Nmove = 1
 fmove = 1
-go_type = ''
+go_type = '' #tipo de fin de juego
 
 
 #|      ~~~~~      Funciones      ~~~~~      |#
@@ -87,7 +122,24 @@ def change_font():
             ps.image2 = chessfont.render("k", 1, WHITE)
         ps.image.blit(ps.image2,(0,0))
 
+def change_orintation(pov):
+    board.reset()
+    if pov == 0:
+        for p in Pieces:
+            p.update((p.pos[1]*80, p.pos[0]*80))
+    else:
+        for p in Pieces:
+            p.update(((7-p.pos[1])*80, (7-p.pos[0])*80))
+    reset()
+
 #|   ++++   Principales   ++++   |#
+
+def change_turn():
+    global turn, noturn
+    if turn == 0:
+        (turn,noturn)=(1,0)
+    else:
+        (turn,noturn)=(0,1)
 
 def game_over():#*#saber si se acabo el juego (solo en jaquemate, ahogo o regla de 50 movimientos)
     global go_type
@@ -330,7 +382,7 @@ class Board(pygame.sprite.Sprite):
         for m in piece.lm:
             (i,j) = m
             (i1,j1) = (i,j)
-            if (rotate and fo == noturn) or (not rotate and fo == 1):
+            if orientation == 1:
                 (i1,j1) = (7-i, 7-j)
             if move_posible(piece,[i,j],turn,self) or lm_castle(piece,[i,j],turn,self):
                 screen.blit(mp,(j1*80+30,i1*80+30))
@@ -351,7 +403,7 @@ class Board(pygame.sprite.Sprite):
         (xp, yp) = pos
         (x,y) = pos
         bsq = chessfont.render("+",1,GREY)
-        if (rotate and fo == noturn) or (not rotate and fo == 1):
+        if orientation == 1:
             (x,y) = (7-xp,7-yp)
         if xp % 2 and yp % 2 or (xp-1) % 2 and (yp-1) % 2:
             if mode == 0:
@@ -400,7 +452,7 @@ class Board(pygame.sprite.Sprite):
         (c,r) = new_pos
         s = 1
         z = 0
-        if (rotate and fo == turn) or (not rotate and fo == 1):
+        if orientation == 1:
             (c,r) = (7-c,7-r)
             z = 240
             s = -1
@@ -525,15 +577,14 @@ class Piece(pygame.sprite.Sprite):
         if not new_pos == self.pos:
             distance_x = (new_pos[0] - self.pos[0])/frames
             distance_y = (new_pos[1] - self.pos[1])/frames
-            py = self.pos[0]
-            px = self.pos[1]
+            (py, px) = self.pos
+            (npy,npx) = new_pos
             cstl = False
             if turn == 0:
                 ep = 1
             else:
                 ep = -1
-            if lm_castle(self,new_pos,turn,new_board) and not check[0]:
-                cstl = True
+            if lm_castle(self,new_pos,turn,new_board) and not check[0]: cstl = True
             if new_pos in self.lm:
                 if self.type == 6:
                     if self.color == WHITE:
@@ -553,21 +604,15 @@ class Piece(pygame.sprite.Sprite):
                             rc_q = False
                         elif self.start_pos[1] == 7:
                             rc_k = False
-                if self.type == 1 and self.pos[0]-new_pos[0] == ep*2:
-                    en_pssnt = [True,[new_pos[0]+ep,new_pos[1]]]
-                else:
-                    en_pssnt = [False,None]
+                if self.type == 1 and self.pos[0]-new_pos[0] == ep*2: en_pssnt = [True,[new_pos[0]+ep,new_pos[1]]]
+                else: en_pssnt = [False,None]
                 if cstl:
                     if new_pos[1] == 2:
-                        if self.color == WHITE:
-                            rm = [[7,3],[7,0]]
-                        else:
-                            rm = [[0,3],[0,0]]
+                        if self.color == WHITE: rm = [[7,3],[7,0]]
+                        else: rm = [[0,3],[0,0]]
                     elif new_pos[1] == 6:
-                        if self.color == WHITE:
-                            rm = [[7,5],[7,7]]
-                        else:
-                            rm = [[0,5],[0,7]]
+                        if self.color == WHITE: rm = [[7,5],[7,7]]
+                        else: rm = [[0,5],[0,7]]
                     ry = rm[1][0]
                     rx = rm[1][1]
                     dr_x = (rm[0][0]-ry)/frames
@@ -575,13 +620,14 @@ class Piece(pygame.sprite.Sprite):
                     rook = new_board.position[ry][rx]
                     new_board.position[ry][rx] = 0
                 new_board.position[py][px] = 0
+                if orientation == 1:
+                    (npx,npy) = (7-npx,7-npy)
                 if not anim:
                     move_sound.play()
                 else:
                     (fpy,fpx) = self.pos
-                    if cstl:
-                        (fry,frx) = rm[1]
-                    if (rotate and fo == noturn) or (not rotate and fo == 1):
+                    if cstl: (fry,frx) = rm[1]
+                    if orientation == 1:
                         (px,py) = (7-px,7-py)
                         (distance_x,distance_y) = (-distance_x,-distance_y)
                         (fpx,fpy) = (7-fpx,7-fpy)
@@ -602,27 +648,19 @@ class Piece(pygame.sprite.Sprite):
                         boardgroup.draw(screen)
                         piecegroup.draw(screen)
                         pygame.display.update()
-                        if i == frames*2/3:
-                            move_sound.play()
+                        if i == frames*2/3: move_sound.play()
                         clock.tick(60)
                 new_board.set_piece(columnes[new_pos[1]],lines[new_pos[0]],self)
-                self.update((new_pos[1]*80,new_pos[0]*80))
+                self.update((npx*80,npy*80))
                 if cstl:
                     new_board.set_piece(columnes[rm[0][1]],lines[rm[0][0]],rook)
                     rook.update((rm[0][1]*80,rm[0][0]*80))
-                    if not anim:
-                        pygame.time.delay(int(delay*400))
+                    if not anim: pygame.time.delay(int(delay*400))
                     move_sound.play()
-                if self.color == WHITE:
-                    (turn,noturn)=(1,0)
-                elif self.color == BLACK:
-                    (turn,noturn)=(0,1)
-                if piece_raised.type == 1:
-                    last_cpm = 0
-                else:
-                    last_cpm += 1
-                if turn == 0:
-                    Nmove += 1
+                change_turn()
+                if piece_raised.type == 1: last_cpm = 0
+                else: last_cpm += 1
+                if turn == 0: Nmove += 1
 
     def capture(self,new_pos,new_board,anim):#*#funcion capturar pieza
     #*#(verifica si la captura es posible y si es asi, la efectua, si es necesario hace la animación del movimiento)
@@ -631,6 +669,7 @@ class Piece(pygame.sprite.Sprite):
         if not new_pos == self.pos:
             distance_x = (new_pos[0] - self.pos[0])/frames
             distance_y = (new_pos[1] - self.pos[1])/frames
+            (npy,npx) = new_pos
             py = self.pos[0]
             px = self.pos[1]
             if new_pos in self.lm:
@@ -651,12 +690,14 @@ class Piece(pygame.sprite.Sprite):
                     new_board.position[self.pos[0]][new_pos[1]] = 0
                 en_pssnt = [False,None]
                 new_board.position[self.pos[0]][self.pos[1]] = 0
+                if orientation == 1:
+                    (npx,npy) = (7-npx,7-npy)
                 if not anim:
                     move_sound.play()
                     capture_sound.play()
                 else:
                     (fpy,fpx) = self.pos
-                    if (rotate and fo == noturn) or (not rotate and fo == 1):
+                    if orientation == 1:
                         (px,py) = (7-px,7-py)
                         (distance_x,distance_y) = (-distance_x,-distance_y)
                         (fpx,fpy) = (7-fpx,7-fpy)
@@ -672,14 +713,12 @@ class Piece(pygame.sprite.Sprite):
                             capture_sound.play()
                         clock.tick(60)
                 new_board.set_piece(columnes[new_pos[1]],lines[new_pos[0]],self)
-                self.update((new_pos[1]*80,new_pos[0]*80))
+                self.update((npx*80,npy*80))
+                change_turn()
+                pd.kill()
                 if self.color == WHITE:
-                    (turn,noturn)=(1,0)
-                    pd.kill()
                     del Bpieces[Bpieces.index(pd)]
-                elif self.color == BLACK:
-                    (turn,noturn)=(0,1)
-                    pd.kill()
+                else:
                     del Wpieces[Wpieces.index(pd)]
                 last_cpm = 0
                 if turn == 0:
@@ -732,11 +771,13 @@ class Piece(pygame.sprite.Sprite):
 
 #|   ++++   Clase flechas   ++++   |#
 
-class Arrows:
+class Arrows(pygame.sprite.Sprite):
     def __init__(self,color:tuple,p1:list,p2:list):
+        super().__init__()
         self.color = color
         self.bottom = (p1[1],p1[0])
         self.top = (p2[1],p2[0])
+        self.image = pygame.Surface((640, 640))
 
     def draw(self):
         (ax,ay) = (self.bottom[0]*80+40,self.bottom[1]*80+40)
@@ -749,9 +790,6 @@ class Arrows:
         if self.top[0]-self.bottom[0] == self.top[1]-self.bottom[1]:
             c1 = 44
             c2 = 49
-        elif self.bottom[0]-self.top[0] == self.top[1]-self.bottom[1]:
-            c1 = 44
-            c2 = 49
         else:
             c1 = 37
             c2 = 42
@@ -760,24 +798,31 @@ class Arrows:
         p2 = (bx+c1*scal1[0],by+c1*scal1[1])
         p3 = (bx+c2*scal1[0]-c3*scal2[0],by+c2*scal1[1]-c3*scal2[1])
         p4 = (bx+c2*scal1[0]+c3*scal2[0],by+c2*scal1[1]+c3*scal2[1])
-        pygame.draw.aaline(screen, self.color, p1, p2, 1)
-        pygame.draw.aaline(screen, self.color, p2, p3, 1)
-        pygame.draw.aaline(screen, self.color, p2, p4, 1)
+        pygame.draw.aaline(self.image, self.color, p1, p2, 1)
+        pygame.draw.aaline(self.image, self.color, p2, p3, 1)
+        pygame.draw.aaline(self.image, self.color, p2, p4, 1)
+
+    def update(self, p1, p2):
+        pass
 
 #|   ++++   Clase casillas   ++++   |#
 
-class Squares:
+class Squares(pygame.sprite.Sprite):
     def __init__(self,color:tuple,pos:list):
+        super().__init__()
         self.color = color
         self.pos = pos
 
     def draw(self):
         (i1,j1) = self.pos
-        if (rotate and fo == noturn) or (not rotate and fo == 1):
+        if orientation == 1:
             (i1,j1) = (7-self.pos[0],7-self.pos[1])
         pygame.draw.rect(screen, self.color, (self.pos[1]*80, self.pos[0]*80, 80, 80))
         if not board.position[i1][j1] == 0:
             screen.blit (board.position[i1][j1].image,(self.pos[1]*80,self.pos[0]*80))
+
+    def update(self, pos):
+        pass
 
 #|***movimientos legales***|#
 
@@ -1011,65 +1056,33 @@ b2_img = chessfont.render('b', 1, WHITE)
 r2_img = chessfont.render('r', 1, WHITE)
 q2_img = chessfont.render('q', 1, WHITE)
 k2_img = chessfont.render('k', 1, WHITE)
-images = [P_img,p_img,N_img,n_img,B_img,b_img,R_img,r_img,Q_img,q_img,K_img,k_img]
+images = [P_img,p_img,N_img,n_img,B_img,b_img,R_img,r_img,Q_img,q_img,K_img,k_img] #lista de imagenes
 
-types = ['p','n','b','r','q','k']
-imgtypes = ['o','m','v','t','w','l']
+types = ['p','n','b','r','q','k'] #tipos de piezas
+imgtypes = ['o','m','v','t','w','l'] #tipos de imagenes
 
-brd = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"#Codigo FEN
+brd = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" #Codigo FEN de la posición inicial del ajedrez
 
-Wpieces = []
-Bpieces = []
-Pieces = []
-K = 0
-k = 0
+Wpieces = [] #lista de piezas blancas
+Bpieces = [] #lista de piezas negras
+Pieces = [] #lista de todas las piezas
+K = 0 #rey blanco
+k = 0 #rey negro
 
-board = Board(brd)
-lines = ['8','7','6','5','4','3','2','1']
-columnes = ['a','b','c','d','e','f','g','h']
+board = Board(brd) #tablero
+lines = ['8','7','6','5','4','3','2','1'] #filas (al revez para la impresión)
+columnes = ['a','b','c','d','e','f','g','h'] #columnas
 
-#groups
+#groups (para un mejor uso de las imagenes)
 
-boardgroup = pygame.sprite.GroupSingle()
-boardgroup.add(board)
+boardgroup = pygame.sprite.GroupSingle() #grupo del tablero
+boardgroup.add(board) #añadir el tablero
 
-piecegroup = pygame.sprite.Group()
+piecegroup = pygame.sprite.Group() #grupo de las piezas
 for ps in Pieces:
-    piecegroup.add(ps)
+    piecegroup.add(ps) #añadir todas las piezas
 
-#|   ++++   variables en posicion inicial  ++++   |#
-
-mode = 0
-menu = True
-move = False
-check=[False,None,False]
-running = True
-clock = pygame.time.Clock()
-
-fps = 60
-delay = 0.2
-frames = int(fps*delay)
-
-score = [0,0]
-
-orientation = 0
-fo = orientation
-rotate = False
-
-piece_raised = 0
-pcd = None
-
-promoting = [False,None,None,None]
-en_pssnt = [False,None]
-mouse_sq = []
-
-cnt = 0
-
-m_arw = 0
-cnt_arws = 0
-cnt_sqrs = 0
-arws = []
-sqrs = []
+arrowsgroup = pygame.sprite.Group()
 
 #|      ~~~~~      Interaccion grafica con el juego      ~~~~~      |#
 
@@ -1079,7 +1092,7 @@ print(board)
 print(repr(board))
 board.reset_lm()
 board.reset()
-reset()
+change_orintation(fo)
 display_menu()
 pygame.display.update()
 
@@ -1094,7 +1107,7 @@ while running:
         n = int(n/80)
         (M,N) = (m,n)
         (I,J) = (i,j)
-        if (rotate and fo == noturn) or (not rotate and fo == 1):
+        if orientation == 1:
             (M,N) = (7-m,7-n)
             (I,J) = (7-i,7-j)
         if not move:
@@ -1105,7 +1118,7 @@ while running:
         if len(mouse_sq) == 2 and not mouse_sq == (N,M):
             (a,b) = mouse_sq
             (a1,b1) = mouse_sq
-            if (rotate and fo == noturn) or (not rotate and fo == 1):
+            if orientation == 1:
                 (a1,b1) = (7-a1,7-b1)
             if mselect == mp:
                 screen.blit(mp,(b1*80+30,a1*80+30))
@@ -1123,8 +1136,7 @@ while running:
             screen.blit(ms_mp,(m*80,n*80))
             mouse_sq = [N,M]
         if move:
-            (a,b) = piece_raised.pos
-            piece_raised.draw(b*80,a*80)
+            piece_raised.draw(I*80,J*80)
         else:
             piece_raised.draw(m1-40,m2-40)
         pygame.display.update()
@@ -1149,7 +1161,7 @@ while running:
                     (r,c) = pawn.pos
                     (y,x) = promoting[3]
                     (n1,n2,n3) = (1,2,3)
-                    if (rotate and fo == turn) or (not rotate and fo == 1):
+                    if orientation == 1:
                         (n1,n2,n3) = (-n1,-n2,-n3)
                         (r,c) = (7-r,7-c)
                     if pawn.color == WHITE:
@@ -1243,7 +1255,7 @@ while running:
                     reset()
                     pygame.display.update()
                 elif piece_raised == 0:#levantar pieza (1° click)
-                    if (rotate and fo == noturn) or (not rotate and fo == 1):
+                    if orientation == 1:
                         (i,j) = (7-i,7-j)
                     if not board.position[j][i] == 0:
                         piece_raised = board.position[j][i]#saber cual pieza y su posicion
@@ -1255,7 +1267,7 @@ while running:
                             screen.blit(r_sq,(i*80,j*80))
                 else:#colocar pieza(2° click)
                     (I,J) = (i,j)
-                    if (rotate and fo == noturn) or (not rotate and fo == 1):
+                    if orientation == 1:
                         (i,j) = (7-i,7-j)
                     old_pos = piece_raised.pos
                     if board.position[j][i] == 0 and not en_passant(piece_raised,[j,i],turn,board):
@@ -1264,7 +1276,6 @@ while running:
                         pcd = board.position[j][i]
                         piece_raised.capture([j,i],board,True)
                     if not old_pos == piece_raised.pos:
-                        nt = orientation
                         m_arw = Arrows(color_turn[noturn],old_pos,piece_raised.pos)
                         if piece_raised.type == 1:
                             if piece_raised.pos[0] == 0:
@@ -1280,27 +1291,18 @@ while running:
                             print(board)
                             print(repr(board))
                         if rotate:
-                            orientation = turn
-                            nt = noturn
+                            if fo == 0: orientation = turn
+                            else: orientation = noturn
+                            change_orintation(orientation)
                         check = board.check(noturn)
-                    if not board.position[j][i] == 0:
-                        if board.position[j][i].color == piece_raised.color:
-                            if not board.position[j][i] == piece_raised:
-                                board.reset()
-                                piece_raised = board.position[j][i]
-                                screen.blit(r_sq,(I*80,J*80))
-                                board.position[j][i].draw(I*80,J*80)
-                                piece_raised.rsrch_lm(board)
-                                board.show_lm(piece_raised)
-                                pygame.display.update()
-                            else:
-                                piece_raised = 0
-                                reset()
-                                pygame.display.update()
-                        else:
-                            piece_raised = 0
-                            reset()
-                            pygame.display.update()
+                    if not board.position[j][i] == piece_raised:
+                        board.reset()
+                        piece_raised = board.position[j][i]
+                        screen.blit(r_sq,(I*80,J*80))
+                        board.position[j][i].draw(I*80,J*80)
+                        piece_raised.rsrch_lm(board)
+                        board.show_lm(piece_raised)
+                        pygame.display.update()
                     else:
                         piece_raised = 0
                         reset()
@@ -1310,12 +1312,12 @@ while running:
                     elif game_over():
                         if check[0]:
                             if color_turn[noturn] == WHITE:
-                                score[0] = score[0] + 1
+                                score[0] += 1
                             elif color_turn[noturn] == BLACK:
-                                score[1] = score[1] + 1
+                                score[1] += 1
                         else:
-                            score[0] = score[0] + 0.5
-                            score[1] = score[1] + 0.5
+                            score[0] += 0.5
+                            score[1] += 0.5
                         board.finish_game()
                         pygame.display.update()
                     move = False
@@ -1331,7 +1333,7 @@ while running:
                 j = int(j/80)
                 if not piece_raised == 0:
                     (I,J) = (i,j)
-                    if (rotate and fo == noturn) or (not rotate and fo == 1):
+                    if orientation == 1:
                         (i,j) = (7-i,7-j)
                     old_pos = piece_raised.pos
                     if [j,i] == piece_raised.pos:
@@ -1347,7 +1349,6 @@ while running:
                         pcd = board.position[j][i]
                         piece_raised.capture([j,i],board,False)
                     if not old_pos == piece_raised.pos:
-                        nt = orientation
                         m_arw = Arrows(color_turn[noturn],old_pos,piece_raised.pos)
                         if piece_raised.type == 1:
                             if piece_raised.pos[0] == 0:
@@ -1363,8 +1364,9 @@ while running:
                             print(board)
                             print(repr(board))
                         if rotate:
-                            orientation = turn
-                            nt = noturn
+                            if fo == 0: orientation = turn
+                            else: orientation = noturn
+                            change_orintation(orientation)
                         if piece_raised.type == 1:
                             if piece_raised.pos[0] == 0:
                                 promoting = [True,piece_raised,pcd,old_pos]
@@ -1400,7 +1402,7 @@ while running:
                 i = int(i/80)
                 j = int(j/80)
                 (i1,j1) = (i,j)
-                if (rotate and fo == noturn) or (not rotate and fo == 1):
+                if orientation == 1:
                     (i1,j1) = (7-i,7-j)
                 if (x,y) == (i,j):
                     if get_sqr((x,y)) == None:
