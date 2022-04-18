@@ -409,7 +409,7 @@ class Board(pygame.sprite.Sprite):
     def check(self,t):#detenerminar si hay Jaque en la posicion
         tc=[False,None]
         counter=0
-        if turn == 0:
+        if t == 0:
             for piece in Wpieces:
                 if capture_posible(piece,k.pos,t,self):
                     tc=[True,piece]
@@ -791,12 +791,13 @@ class Squares(pygame.sprite.Sprite):
         self.pos = pos
 
     def draw(self):
+        global orientation
         (i1,j1) = self.pos
         if orientation == 1:
             (i1,j1) = (7-self.pos[0],7-self.pos[1])
-        pygame.draw.rect(screen, self.color, (self.pos[1]*80, self.pos[0]*80, 80, 80))
-        if not board.position[i1][j1] == 0:
-            screen.blit (board.position[i1][j1].image,(self.pos[1]*80,self.pos[0]*80))
+        pygame.draw.rect(screen, self.color, (j1*80, i1*80, 80, 80))
+        if not board.position[self.pos[0]][self.pos[1]] == 0:
+            screen.blit (board.position[self.pos[0]][self.pos[1]].image,(j1*80,i1*80))
 
     def update(self, pos):
         pass
@@ -1155,9 +1156,11 @@ while running:
                             pawn.type = 3
                             pawn.image = B_img
                         else:
-                            if not promoting[2] == None:
-                                Bpieces.append(promoting[2])
-                                board.position[r][c] = promoting[2]
+                            if not pcd == None:
+                                Bpieces.append(pcd)
+                                board.position[r][c] = pcd
+                                piecegroup.add(pcd)
+                                pcd.update((pcd.pos[1]*80, pcd.pos[1]*80))
                                 pcd = None
                             else:
                                 board.position[r][c] = 0
@@ -1185,14 +1188,19 @@ while running:
                             if mode == 1:
                                 pawn.image2 = b2_img
                         else:
-                            if not promoting[2] == None:
-                                Wpieces.append(promoting[2])
-                                board.position[r][c] = promoting[2]
+                            if not pcd == None:
+                                Wpieces.append(pcd)
+                                board.position[r][c] = pcd
+                                pcd.update((pcd.pos[1]*80, pcd.pos[1]*80))
                                 pcd = None
                             else:
                                 board.position[r][c] = 0
                             board.set_piece(columnes[x],lines[y],pawn)
                             (turn,noturn)=(1,0)
+                    if rotate:
+                        if fo == 0: orientation = turn
+                        else: orientation = noturn
+                        change_orintation(orientation)
                     promoting = [False,None,None,None]
                     board.reset_lm()
                     reset()
@@ -1267,12 +1275,12 @@ while running:
                             board.reset_lm()
                             print(board)
                             print(repr(board))
-                        if rotate:
+                        if rotate and not promoting[0]:
                             if fo == 0: orientation = turn
                             else: orientation = noturn
                             change_orintation(orientation)
                         check = board.check(noturn)
-                    if not board.position[j][i] == piece_raised:
+                    if not board.position[j][i] == piece_raised and not board.position[j][i] == 0:
                         board.reset()
                         piece_raised = board.position[j][i]
                         screen.blit(r_sq,(I*80,J*80))
@@ -1340,7 +1348,7 @@ while running:
                             board.reset_lm()
                             print(board)
                             print(repr(board))
-                        if rotate:
+                        if rotate and not promoting[0]:
                             if fo == 0: orientation = turn
                             else: orientation = noturn
                             change_orintation(orientation)
