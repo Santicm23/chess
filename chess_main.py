@@ -501,7 +501,7 @@ class Board(pygame.sprite.Sprite):
         screen.blit(mate,(250,230))
 
     def restart(self):#resetear el tablero a la posición inicial designada
-        global last_cpm, flcpm
+        global last_cpm, flcpm, orientation, fo
         last_cpm = flcpm
         self.position = [[0,0,0,0,0,0,0,0],
                          [0,0,0,0,0,0,0,0],
@@ -523,6 +523,8 @@ class Board(pygame.sprite.Sprite):
                     Bpieces.append(p)
                     piecegroup.add(p)
             p.update((x*80,y*80))
+        orientation = fo
+        change_orintation(fo)
 
 #|   ++++   Clase piezas   ++++   |#
 
@@ -719,7 +721,14 @@ class Piece(pygame.sprite.Sprite):
                         pd = new_board.position[i][j]
                         new_board.position[self.pos[0]][self.pos[1]] = 0
                         new_board.set_piece(columnes[j],lines[i],self)
-                        ilegal = new_board.check(noturn)
+                        if pd.color == WHITE:
+                            del Wpieces[Wpieces.index(pd)]
+                            ilegal = new_board.check(noturn)
+                            Wpieces.append(pd)
+                        else:
+                            del Bpieces[Bpieces.index(pd)]
+                            ilegal = new_board.check(noturn)
+                            Bpieces.append(pd)
                         if not ilegal[0]:
                             self.lm.append([i,j])
                         new_board.set_piece(columnes[x],lines[y],self)
