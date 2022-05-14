@@ -501,7 +501,7 @@ class Board(pygame.sprite.Sprite):
         screen.blit(mate,(250,230))
 
     def restart(self):#resetear el tablero a la posición inicial designada
-        global last_cpm, flcpm, orientation, fo
+        global last_cpm, flcpm, orientation, fo, rc_Q, rc_K, rc_q, rc_k
         last_cpm = flcpm
         self.position = [[0,0,0,0,0,0,0,0],
                          [0,0,0,0,0,0,0,0],
@@ -955,25 +955,21 @@ def lm_castle(self,new_pos,t,new_board):#calcula si la posicion dada es una juga
         if new_board.position[self.pos[0]][self.pos[1]].color == WHITE and t == 0:#blanco
             if rc_Q:
                 if new_pos[0]==self.pos[0] and new_pos[1]==self.pos[1]-2:
-                    if not new_board.position[7][0]==0 and move_posible (new_board.position[7][0],[7,3],turn,new_board):
-                        if [7,3] in self.lm:
-                            return True
+                    if not new_board.position[7][0]==0 and move_posible(new_board.position[7][0],[7,3],turn,new_board):
+                        return True
             if rc_K:
                 if new_pos[0]==self.pos[0] and new_pos[1]==self.pos[1]+2:
-                    if not new_board.position[7][7]==0 and move_posible (new_board.position[7][7],[7,5],turn,new_board):
-                        if [7,5] in self.lm:
-                            return True
+                    if not new_board.position[7][7]==0 and move_posible(new_board.position[7][7],[7,5],turn,new_board):
+                        return True
         elif new_board.position[self.pos[0]][self.pos[1]].color == BLACK and t == 1:#negro
             if rc_q:
                 if new_pos[0]==self.pos[0] and new_pos[1]==self.pos[1]-2:
-                    if not new_board.position[0][0]==0 and move_posible (new_board.position[0][0],[0,3],turn,new_board):
-                        if [0,3] in self.lm:
-                            return True
+                    if not new_board.position[0][0]==0 and move_posible(new_board.position[0][0],[0,3],turn,new_board):
+                        return True
             if rc_k:
                 if new_pos[0]==self.pos[0] and new_pos[1]==self.pos[1]+2:
-                    if not new_board.position[0][7]==0 and move_posible (new_board.position[0][7],[0,5],turn,new_board):
-                        if [0,5] in self.lm:
-                            return True
+                    if not new_board.position[0][7]==0 and move_posible(new_board.position[0][7],[0,5],turn,new_board):
+                        return True
 def move_posible(self,new_pos,t,new_board):#verifica, para el tipo de pieza, si el movimiento es correcto
     if new_board.position[new_pos[0]][new_pos[1]]==0:
         if self.type == 1:#para el peon
@@ -1052,7 +1048,7 @@ brd = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" #Codigo FEN de 
 
 Wpieces = [] #lista de piezas blancas
 Bpieces = [] #lista de piezas negras
-Pieces = [] #lista de todas las piezas
+Pieces = [] #lista de todas las piezas (de la posicion inicial)
 K = 0 #rey blanco
 k = 0 #rey negro
 
