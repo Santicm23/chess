@@ -1,0 +1,1 @@
+sqr_size = 64 #square size
