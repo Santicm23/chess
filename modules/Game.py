@@ -1,9 +1,10 @@
 import pygame
 
 from constants import sqr_size
-from modules import Board, Piece
+from modules.Piece import Piece
+from modules.Board import Board
 
-np = Piece.Piece() #null piece
+np = Piece() #null piece
 
 class Game:
     def __init__(self, surface:pygame.Surface, fen_code:str):
@@ -26,12 +27,11 @@ class Game:
         self.last_cpm = 0 #last capture or pawn move
         self.number_moves = 0
         fen(self, fen_code)
-        self.board = Board.Board()
-        self.board_group = pygame.sprite.GroupSingle()
-        self.board_group.add(self.board)
-        self.piece_group = pygame.sprite.Group()
+        self.board = Board()
+        self.group = pygame.sprite.Group()
+        self.group.add(self.board)
         for p in self.white_pieces + self.black_pieces:
-            self.piece_group.add(p)
+            self.group.add(p)
         self.update(surface, self.whites_turn)
     
     def __str__(self):
@@ -96,15 +96,19 @@ class Game:
         return fencode + '\n'
 
     def draw(self, surface:pygame.Surface):
-        self.board_group.draw(surface)
-        self.piece_group.draw(surface)
-        pygame.display.update()
+        self.group.draw(surface)
 
     def update(self, surface:pygame.Surface, whites_pov:bool):
         self.board.update(whites_pov)
         for p in self.white_pieces + self.black_pieces:
-            p.update((p.pos[0]*sqr_size, p.pos[1]*sqr_size), whites_pov)
+            p.update(whites_pov)
         self.draw(surface)
+
+    def get_piece(self, pos:tuple):
+        return self.position[pos[1]][pos[0]]
+
+    def set_piece(self, pos:tuple, piece:Piece):
+        self.position[pos[1]][pos[0]] = piece
 
 def fen(game:Game, fen_code:str):# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 #
     fen_code = fen_code.split()
@@ -113,7 +117,7 @@ def fen(game:Game, fen_code:str):# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w
         k = 0
         for j in fen_pos[i]:
             if j.isalpha():
-                p = Piece.Piece(j, (k,i))
+                p = Piece(j, (k,i))
                 game.position[i][k] = p
                 if j.isupper():
                     if j == 'K':

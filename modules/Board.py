@@ -1,10 +1,6 @@
 import pygame
 
-from constants import sqr_size
-
-WHITE = (225,225,225)
-GREY = (125,125,125)
-LGREY = (155,155,155)
+from constants import sqr_size, WHITE, GREY, LGREY
 
 lines = ['8','7','6','5','4','3','2','1'] #filas (al revez para la impresión)
 files = ['a','b','c','d','e','f','g','h'] #columnas
