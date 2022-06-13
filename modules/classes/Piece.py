@@ -1,10 +1,10 @@
 import pygame
 
-from constants import sqr_size, WHITE, BLACK
+from modules.others.constants import sqr_size, WHITE, BLACK
 
-chessfont = pygame.font.Font("fonts/CASEFONT.TTF", sqr_size)
-mp = pygame.image.load("imgs/mp.png").convert_alpha() #move posible
-cp = pygame.image.load("imgs/cp.png").convert_alpha() #capture posible
+chessfont = pygame.font.Font("source/fonts/CASEFONT.TTF", sqr_size)
+mp = pygame.image.load("source/imgs/mp.png").convert_alpha() #move posible
+cp = pygame.image.load("source/imgs/cp.png").convert_alpha() #capture posible
 
 def get_color(type:str):
     if type.isupper():

@@ -1,6 +1,6 @@
 import pygame
 
-from constants import sqr_size, WHITE, GREY, LGREY
+from modules.others.constants import sqr_size, WHITE, GREY, LGREY
 
 lines = ['8','7','6','5','4','3','2','1'] #lines (in reverse for the impresion)
 files = ['a','b','c','d','e','f','g','h'] #files

@@ -1,8 +1,8 @@
 import pygame
 
-from modules.Piece import Piece
-from modules.Board import Board
-from game_rules import move_posible, lm_castle, capture_posible, en_passant, sum_tuples
+from modules.classes.Piece import Piece
+from modules.classes.Board import Board
+from modules.others.game_rules import move_posible, lm_castle, capture_posible, en_passant, sum_tuples
 
 np = Piece() #null piece
 

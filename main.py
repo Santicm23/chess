@@ -1,13 +1,13 @@
 import pygame, sys
 pygame.init()
 
-from constants import sqr_size
+from modules.others.constants import sqr_size
 screen = pygame.display.set_mode((sqr_size*8,sqr_size*8))
 
-from modules.Game import Game, Piece, np
+from modules.classes.Game import Game, Piece, np
 
 pygame.display.set_caption("Chess")
-pygame.display.set_icon(pygame.image.load("imgs/icon.png"))
+pygame.display.set_icon(pygame.image.load("source/imgs/icon.png"))
 
 def reset(surface:pygame.Surface, piece:Piece=np, pos:tuple=(0,0)):
     game.draw(surface)

@@ -10,14 +10,14 @@ from pygame.locals import *
 pygame.init()
 screen = pygame.display.set_mode((640,640))
 pygame.display.set_caption("Chess")
-pygame.display.set_icon(pygame.image.load("imgs/icon.png"))
+pygame.display.set_icon(pygame.image.load("source/imgs/icon.png"))
 
 #|   ++++   Fuentes   ++++   |#
 
 font = pygame.font.SysFont("Gerbera", 16)
 font2 = pygame.font.SysFont("Gerbera", 40)
 font3 = pygame.font.SysFont("Gerbera", 30)
-chessfont = pygame.font.Font("fonts/CASEFONT.TTF", 80)
+chessfont = pygame.font.Font("source/fonts/CASEFONT.TTF", 80)
 
 #|   ++++   Colores en RGB   ++++   |#
 
@@ -66,15 +66,15 @@ sqrs = []
 
 #|   ++++   Imagenes de diseño   ++++   |#
 
-r_sq = pygame.image.load("imgs/raised_square.png").convert_alpha()
-mp = pygame.image.load("imgs/mp.png").convert_alpha()
-cp = pygame.image.load("imgs/cp.png").convert_alpha()
-ms_mp = pygame.image.load("imgs/ms_mp.png").convert_alpha()
+r_sq = pygame.image.load("source/imgs/raised_square.png").convert_alpha()
+mp = pygame.image.load("source/imgs/mp.png").convert_alpha()
+cp = pygame.image.load("source/imgs/cp.png").convert_alpha()
+ms_mp = pygame.image.load("source/imgs/ms_mp.png").convert_alpha()
 
 #|   ++++   Sonidos   ++++   |#
 
-move_sound = pygame.mixer.Sound("sounds/piece_dropped.mp3")
-capture_sound = pygame.mixer.Sound("sounds/piece_capturing.mp3")
+move_sound = pygame.mixer.Sound("source/sounds/piece_dropped.mp3")
+capture_sound = pygame.mixer.Sound("source/sounds/piece_capturing.mp3")
 
 #|   ++++   Variables principales   ++++   |#
 
