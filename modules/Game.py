@@ -1,13 +1,13 @@
 import pygame
 
-from constants import sqr_size
 from modules.Piece import Piece
 from modules.Board import Board
+from game_rules import move_posible, lm_castle, capture_posible, en_passant, sum_tuples
 
 np = Piece() #null piece
 
 class Game:
-    def __init__(self, surface:pygame.Surface, fen_code:str):
+    def __init__(self, fen_code:str):
         self.start_fen = fen_code
         self.position = [
             [np,np,np,np,np,np,np,np],
@@ -23,6 +23,7 @@ class Game:
         self.black_pieces = []
         self.whites_turn = True
         self.check = False
+        self.en_passant = None
         self.right_castle = {'K': False, 'Q': False, 'k': False, 'q': False}
         self.last_cpm = 0 #last capture or pawn move
         self.number_moves = 0
@@ -32,7 +33,7 @@ class Game:
         self.group.add(self.board)
         for p in self.white_pieces + self.black_pieces:
             self.group.add(p)
-        self.update(surface, self.whites_turn)
+        self.update(self.whites_turn)
     
     def __str__(self):
         """+---+---+---+---+---+---+---+---+
@@ -98,17 +99,58 @@ class Game:
     def draw(self, surface:pygame.Surface):
         self.group.draw(surface)
 
-    def update(self, surface:pygame.Surface, whites_pov:bool):
-        self.board.update(whites_pov)
+    def update(self, pov:bool):
+        self.board.update(pov)
         for p in self.white_pieces + self.black_pieces:
-            p.update(whites_pov)
-        self.draw(surface)
+            p.update(pov)
 
     def get_piece(self, pos:tuple):
         return self.position[pos[1]][pos[0]]
 
     def set_piece(self, pos:tuple, piece:Piece):
+        self.del_piece(piece.pos)
+        piece.pos = pos
+        piece.update()
         self.position[pos[1]][pos[0]] = piece
+
+    def del_piece(self, pos:tuple):
+        self.position[pos[1]][pos[0]] = np
+
+    def move(self, pos:list, piece:Piece):
+        if not self.get_piece(pos) == np:
+            if self.whites_turn:
+                self.black_pieces.pop(self.black_pieces.index(self.get_piece(pos))).kill()
+            else:
+                self.white_pieces.pop(self.white_pieces.index(self.get_piece(pos))).kill()
+        elif lm_castle(piece, pos, self):
+            if pos[0] == 6:
+                rook = self.get_piece(sum_tuples(pos,(1,0)))
+                self.set_piece(sum_tuples(pos,(-1,0)), rook)
+            else:
+                rook = self.get_piece(sum_tuples(pos,(-2,0)))
+                self.set_piece(sum_tuples(pos,(1,0)), rook)
+        elif en_passant(piece, pos, self):
+            if piece.type == 'P':
+                pawn = self.get_piece(sum_tuples(pos,(0,1)))
+                self.black_pieces.pop(self.black_pieces.index(pawn)).kill()
+                self.del_piece(pawn.pos)
+            elif piece.type == 'p':
+                pawn = self.get_piece(sum_tuples(pos,(0,-1)))
+                self.white_pieces.pop(self.white_pieces.index(pawn)).kill()
+                self.del_piece(pawn.pos)
+        self.set_piece(pos, piece)
+        self.whites_turn = not self.whites_turn
+        self.update_legal_moves()
+        print(self)
+        print(repr(self))
+
+    def update_legal_moves(self):
+        for p in self.white_pieces + self.black_pieces:
+            p.legal_moves = []
+            for i in range (8):
+                for j in range(8):
+                    if move_posible(p, (i,j), self) or capture_posible(p, (i,j), self):
+                        p.legal_moves.append((i,j))
 
 def fen(game:Game, fen_code:str):# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 #
     fen_code = fen_code.split()

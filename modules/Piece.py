@@ -3,6 +3,8 @@ import pygame
 from constants import sqr_size, WHITE, BLACK
 
 chessfont = pygame.font.Font("fonts/CASEFONT.TTF", sqr_size)
+mp = pygame.image.load("imgs/mp.png").convert_alpha() #move posible
+cp = pygame.image.load("imgs/cp.png").convert_alpha() #capture posible
 
 def get_color(type:str):
     if type.isupper():
@@ -17,7 +19,6 @@ class Piece(pygame.sprite.Sprite):
         assert 0 <= pos[0] and pos[0] < 8 and 0 <= pos[1] and pos[1] < 8 and len(pos) == 2
         self.type = type
         self.pos = pos
-        self.start_pos = pos
         self.color = get_color(self.type)
         self.set_image()
         self.legal_moves = []
@@ -31,10 +32,17 @@ class Piece(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = (self.pos[0]*sqr_size,self.pos[1]*sqr_size))
     
     def draw(self, surface:pygame.Surface, pos:tuple):
-        surface.blit(self.image,pos)
+        surface.blit(self.image, pos)
 
-    def update(self, whites_pov:bool):
-        if whites_pov:
-            self.rect = self.image.get_rect(topleft = ((self.pos[0])*sqr_size,(self.pos[1])*sqr_size))
+    def update(self, pov:bool=True):
+        if pov:
+            self.rect.topleft = ((self.pos[0])*sqr_size,(self.pos[1])*sqr_size)
         else:
-            self.rect = self.image.get_rect(topleft = ((7-self.pos[0])*sqr_size,(7-self.pos[1])*sqr_size))
+            self.rect.topleft = ((7-self.pos[0])*sqr_size,(7-self.pos[1])*sqr_size)
+    
+    def show_legal_moves(self, game, surface:pygame.Surface):
+        for m in self.legal_moves:
+            if game.get_piece(m).type == ' ':
+                surface.blit(mp,(m[0]*sqr_size+30,m[1]*sqr_size+30))
+            else:
+                surface.blit(cp,(m[0]*sqr_size,m[1]*sqr_size))
