@@ -3,6 +3,8 @@ import pygame
 from modules.others.constants import sqr_size, WHITE, BLACK
 
 chessfont = pygame.font.Font("source/fonts/CASEFONT.TTF", sqr_size)
+rsq = pygame.image.load("source/imgs/raised_square.png").convert_alpha() #pos where the piece was raised
+ms_mp = pygame.image.load("source/imgs/ms_mp.png").convert_alpha() #mouse on move posible
 mp = pygame.image.load("source/imgs/mp.png").convert_alpha() #move posible
 cp = pygame.image.load("source/imgs/cp.png").convert_alpha() #capture posible
 
@@ -40,9 +42,12 @@ class Piece(pygame.sprite.Sprite):
         else:
             self.rect.topleft = ((7-self.pos[0])*sqr_size,(7-self.pos[1])*sqr_size)
     
-    def show_legal_moves(self, game, surface:pygame.Surface):
+    def show_legal_moves(self, game, surface:pygame.Surface, pos:tuple):
+        surface.blit(rsq,(self.pos[0]*sqr_size,self.pos[1]*sqr_size))
         for m in self.legal_moves:
-            if game.get_piece(m).type == ' ':
+            if m == pos:
+                surface.blit(ms_mp,(m[0]*sqr_size,m[1]*sqr_size))
+            elif game.get_piece(m).type == ' ':
                 surface.blit(mp,(m[0]*sqr_size+30,m[1]*sqr_size+30))
             else:
                 surface.blit(cp,(m[0]*sqr_size,m[1]*sqr_size))

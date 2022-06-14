@@ -118,11 +118,14 @@ class Game:
 
     def move(self, pos:list, piece:Piece):
         if not self.get_piece(pos) == np:
+            self.last_cpm = 0
             if self.whites_turn:
                 self.black_pieces.pop(self.black_pieces.index(self.get_piece(pos))).kill()
             else:
                 self.white_pieces.pop(self.white_pieces.index(self.get_piece(pos))).kill()
         elif lm_castle(piece, pos, self):
+            self.last_cpm += 1
+            self.update_right_castle(piece)
             if pos[0] == 6:
                 rook = self.get_piece(sum_tuples(pos,(1,0)))
                 self.set_piece(sum_tuples(pos,(-1,0)), rook)
@@ -130,17 +133,23 @@ class Game:
                 rook = self.get_piece(sum_tuples(pos,(-2,0)))
                 self.set_piece(sum_tuples(pos,(1,0)), rook)
         elif en_passant(piece, pos, self):
+            self.last_cpm = 0
             if piece.type == 'P':
                 pawn = self.get_piece(sum_tuples(pos,(0,1)))
                 self.black_pieces.pop(self.black_pieces.index(pawn)).kill()
-                self.del_piece(pawn.pos)
             elif piece.type == 'p':
                 pawn = self.get_piece(sum_tuples(pos,(0,-1)))
                 self.white_pieces.pop(self.white_pieces.index(pawn)).kill()
-                self.del_piece(pawn.pos)
+            self.del_piece(pawn.pos)
+        elif piece.type.lower() == 'p': self.last_cpm = 0
+        else: 
+            self.last_cpm += 1
+            self.update_right_castle(piece)
+        self.update_en_passant(pos, piece)
         self.set_piece(pos, piece)
         self.whites_turn = not self.whites_turn
         self.update_legal_moves()
+        if self.whites_turn: self.number_moves += 1
         print(self)
         print(repr(self))
 
@@ -151,6 +160,31 @@ class Game:
                 for j in range(8):
                     if move_posible(p, (i,j), self) or capture_posible(p, (i,j), self):
                         p.legal_moves.append((i,j))
+
+    def update_right_castle(self, piece:Piece):
+        print(0)
+        if piece.type == 'k':
+            self.right_castle['k'] = False
+            self.right_castle['q'] = False
+        elif piece.type == 'K':
+            self.right_castle['K'] = False
+            self.right_castle['Q'] = False
+        elif piece.type.lower() == 'r':
+            if piece.pos == (0,0):
+                self.right_castle['q'] = False
+            elif piece.pos == (0,7):
+                self.right_castle['Q'] = False
+            elif piece.pos == (7,0):
+                self.right_castle['k'] = False
+            elif piece.pos == (7,7):
+                self.right_castle['K'] = False
+
+    def update_en_passant(self, pos:list, piece:Piece):    
+        self.en_passant = None
+        if piece.type == 'p' and piece.pos[1]-pos[1] == -2:
+            self.en_passant = sum_tuples(piece.pos, (0,1))
+        elif piece.type == 'P' and piece.pos[1]-pos[1] == 2:
+            self.en_passant = sum_tuples(piece.pos, (0,-1))
 
 def fen(game:Game, fen_code:str):# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 #
     fen_code = fen_code.split()

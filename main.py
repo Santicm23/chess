@@ -9,10 +9,15 @@ from modules.classes.Game import Game, Piece, np
 pygame.display.set_caption("Chess")
 pygame.display.set_icon(pygame.image.load("source/imgs/icon.png"))
 
-def reset(surface:pygame.Surface, piece:Piece=np, pos:tuple=(0,0)):
+def reset(surface:pygame.Surface):
     game.draw(surface)
-    piece.show_legal_moves(game, surface)
-    piece.draw(surface, (int(pos[0]-sqr_size/2),int(pos[1]-sqr_size/2)))
+    pygame.display.update()
+
+def reset_piece(surface:pygame.Surface, pos:tuple, piece:Piece, draw:bool=True):
+    game.draw(surface)
+    piece.show_legal_moves(game, surface, (int(pos[0]/sqr_size),int(pos[1]/sqr_size)))
+    if draw:
+        piece.draw(surface, (int(pos[0]-sqr_size/2),int(pos[1]-sqr_size/2)))
     pygame.display.update()
 
 running = True
@@ -36,13 +41,14 @@ while running:
             running = False
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            piece_raised = game.get_piece((i,j))
-            reset(screen, piece_raised, (x,y))
+            if not game.get_piece((i,j)) == np:
+                piece_raised = game.get_piece((i,j))
+                reset_piece(screen, (x,y), piece_raised)
         elif event.type == pygame.MOUSEBUTTONUP and not piece_raised == np:
             if (i,j) in piece_raised.legal_moves:
                 game.move((i,j), piece_raised)
             piece_raised = np
             reset(screen)
         elif event.type == pygame.MOUSEMOTION and not piece_raised == np:
-            reset(screen, piece_raised, (x,y))
+            reset_piece(screen, (x,y), piece_raised)
     clock.tick(60)
