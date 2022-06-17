@@ -29,10 +29,13 @@ class Game:
         self.number_moves = 0
         fen(self, fen_code)
         self.board = Board()
-        self.group = pygame.sprite.Group()
-        self.group.add(self.board)
+        self.groups = {"board": pygame.sprite.GroupSingle(),
+                       "squares": pygame.sprite.Group(),
+                       "arrows": pygame.sprite.Group(),
+                       "pieces": pygame.sprite.Group()}
+        self.groups["board"].add(self.board)
         for p in self.white_pieces + self.black_pieces:
-            self.group.add(p)
+            self.groups["pieces"].add(p)
         self.update(self.whites_turn)
     
     def __str__(self):
@@ -97,7 +100,8 @@ class Game:
         return fencode + '\n'
 
     def draw(self, surface:pygame.Surface):
-        self.group.draw(surface)
+        for g in self.groups:
+            self.groups[g].draw(surface)
 
     def update(self, pov:bool):
         self.board.update(pov)
@@ -115,6 +119,22 @@ class Game:
 
     def del_piece(self, pos:tuple):
         self.position[pos[1]][pos[0]] = np
+
+    def update_check(self):
+        check = False
+        self.whites_turn = not self.whites_turn
+        if self.whites_turn:
+            for p in self.white_pieces:
+                if capture_posible(p, self.black_pieces[0].pos, self):
+                    check = True
+                    break
+        else:
+            for p in self.black_pieces:
+                if capture_posible(p, self.white_pieces[0].pos, self):
+                    check = True
+                    break
+        self.whites_turn = not self.whites_turn
+        return check
 
     def move(self, pos:list, piece:Piece):
         if not self.get_piece(pos) == np:
@@ -150,8 +170,28 @@ class Game:
         self.whites_turn = not self.whites_turn
         self.update_legal_moves()
         if self.whites_turn: self.number_moves += 1
+        self.check = self.update_check()
         print(self)
         print(repr(self))
+
+    def move_is_legal(self, pos:tuple, piece:Piece):
+        t_piece = self.get_piece(pos)
+        t_pos = piece.pos
+        self.set_piece(pos, piece)
+        if t_piece.type == ' ':
+            legal = not self.update_check()
+        else:
+            if t_piece.type.isupper():
+                del self.white_pieces[self.white_pieces.index(t_piece)]
+                legal = not self.update_check()
+                self.white_pieces.append(t_piece)
+            else:
+                del self.black_pieces[self.black_pieces.index(t_piece)]
+                legal = not self.update_check()
+                self.black_pieces.append(t_piece)
+        self.set_piece(t_pos, piece)
+        self.set_piece(pos, t_piece)
+        return legal
 
     def update_legal_moves(self):
         for p in self.white_pieces + self.black_pieces:
@@ -159,7 +199,8 @@ class Game:
             for i in range (8):
                 for j in range(8):
                     if move_posible(p, (i,j), self) or capture_posible(p, (i,j), self):
-                        p.legal_moves.append((i,j))
+                        if self.move_is_legal((i,j), p):
+                            p.legal_moves.append((i,j))
 
     def update_right_castle(self, piece:Piece):
         print(0)
