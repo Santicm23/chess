@@ -29,13 +29,10 @@ class Game:
         self.number_moves = 0
         fen(self, fen_code)
         self.board = Board()
-        self.groups = {"board": pygame.sprite.GroupSingle(),
-                       "squares": pygame.sprite.Group(),
-                       "arrows": pygame.sprite.Group(),
-                       "pieces": pygame.sprite.Group()}
-        self.groups["board"].add(self.board)
+        self.group = pygame.sprite.Group()
+        self.group.add(self.board)
         for p in self.white_pieces + self.black_pieces:
-            self.groups["pieces"].add(p)
+            self.group.add(p)
         self.update(self.whites_turn)
     
     def __str__(self):
@@ -100,8 +97,7 @@ class Game:
         return fencode + '\n'
 
     def draw(self, surface:pygame.Surface):
-        for g in self.groups:
-            self.groups[g].draw(surface)
+        self.group.draw(surface)
 
     def update(self, pov:bool):
         self.board.update(pov)
@@ -145,7 +141,6 @@ class Game:
                 self.white_pieces.pop(self.white_pieces.index(self.get_piece(pos))).kill()
         elif lm_castle(piece, pos, self):
             self.last_cpm += 1
-            self.update_right_castle(piece)
             if pos[0] == 6:
                 rook = self.get_piece(sum_tuples(pos,(1,0)))
                 self.set_piece(sum_tuples(pos,(-1,0)), rook)
@@ -162,9 +157,8 @@ class Game:
                 self.white_pieces.pop(self.white_pieces.index(pawn)).kill()
             self.del_piece(pawn.pos)
         elif piece.type.lower() == 'p': self.last_cpm = 0
-        else: 
-            self.last_cpm += 1
-            self.update_right_castle(piece)
+        else: self.last_cpm += 1
+        self.update_right_castle(piece)
         self.update_en_passant(pos, piece)
         self.set_piece(pos, piece)
         self.whites_turn = not self.whites_turn
@@ -190,7 +184,8 @@ class Game:
                 legal = not self.update_check()
                 self.black_pieces.append(t_piece)
         self.set_piece(t_pos, piece)
-        self.set_piece(pos, t_piece)
+        if not t_piece == np:
+            self.set_piece(pos, t_piece)
         return legal
 
     def update_legal_moves(self):
@@ -203,7 +198,6 @@ class Game:
                             p.legal_moves.append((i,j))
 
     def update_right_castle(self, piece:Piece):
-        print(0)
         if piece.type == 'k':
             self.right_castle['k'] = False
             self.right_castle['q'] = False

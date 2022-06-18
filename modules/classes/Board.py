@@ -8,11 +8,11 @@ files = ['a','b','c','d','e','f','g','h'] #files
 font = pygame.font.SysFont("Gerbera", int(1/5*sqr_size))
 
 class Board(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, pov:bool=True):
         super().__init__()
         self.image = pygame.Surface((sqr_size*8,sqr_size*8))
         self.rect = self.image.get_rect()
-        self.update(True)
+        self.update(pov)
     
     def update(self, pov:bool):
         pygame.draw.rect(self.image, GREY, (0, 0, sqr_size*8, sqr_size*8))

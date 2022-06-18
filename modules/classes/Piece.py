@@ -33,8 +33,11 @@ class Piece(pygame.sprite.Sprite):
             {'p': 'o', 'n': 'm', 'b': 'v', 'r': 't', 'q': 'w', 'k': 'l', ' ': None}[self.type.lower()], 1, self.color)
         self.rect = self.image.get_rect(topleft = (self.pos[0]*sqr_size,self.pos[1]*sqr_size))
     
-    def draw(self, surface:pygame.Surface, pos:tuple):
-        surface.blit(self.image, pos)
+    def draw(self, surface:pygame.Surface, pos:tuple, pov:bool=True):
+        if pov:
+            surface.blit(self.image, pos)
+        else:
+            surface.blit(self.image, (7*sqr_size-pos[0],7*sqr_size-pos[1]))
 
     def update(self, pov:bool=True):
         if pov:
@@ -42,12 +45,19 @@ class Piece(pygame.sprite.Sprite):
         else:
             self.rect.topleft = ((7-self.pos[0])*sqr_size,(7-self.pos[1])*sqr_size)
     
-    def show_legal_moves(self, game, surface:pygame.Surface, pos:tuple):
-        surface.blit(rsq,(self.pos[0]*sqr_size,self.pos[1]*sqr_size))
+    def show_legal_moves(self, game, surface:pygame.Surface, pos:tuple, pov:bool=True):
+        if pov:
+            surface.blit(rsq,(self.pos[0]*sqr_size,self.pos[1]*sqr_size))
+        else:
+            surface.blit(rsq,((7-self.pos[0])*sqr_size,(7-self.pos[1])*sqr_size))
         for m in self.legal_moves:
-            if m == pos:
-                surface.blit(ms_mp,(m[0]*sqr_size,m[1]*sqr_size))
-            elif game.get_piece(m).type == ' ':
-                surface.blit(mp,(m[0]*sqr_size+30,m[1]*sqr_size+30))
+            if pov:
+                M = m
             else:
-                surface.blit(cp,(m[0]*sqr_size,m[1]*sqr_size))
+                M = (7-m[0],7-m[1])
+            if M == pos:
+                surface.blit(ms_mp,(M[0]*sqr_size,M[1]*sqr_size))
+            elif game.get_piece(m).type == ' ':
+                surface.blit(mp,(M[0]*sqr_size+30,M[1]*sqr_size+30))
+            else:
+                surface.blit(cp,(M[0]*sqr_size,M[1]*sqr_size))
