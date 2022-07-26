@@ -1,6 +1,8 @@
 import pygame
 
 from modules.others.constants import sqr_size, WHITE, GREY, LGREY
+from modules.classes.esthetic.Arrow import Arrow
+from modules.classes.esthetic.Square import Square
 
 lines = ['8','7','6','5','4','3','2','1'] #lines (in reverse for the impresion)
 files = ['a','b','c','d','e','f','g','h'] #files
@@ -12,6 +14,11 @@ class Board(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.Surface((sqr_size*8,sqr_size*8))
         self.rect = self.image.get_rect()
+        self.check_square = Square()
+        self.move_arrow = Arrow(WHITE)
+        self.draws_group = pygame.sprite.Group()
+        self.draws_group.add(self.check_square)
+        self.draws_group.add(self.move_arrow)
         self.update(pov)
     
     def update(self, pov:bool):
@@ -31,3 +38,5 @@ class Board(pygame.sprite.Sprite):
             if not pov:
                 C=7-c
             self.image.blit(ltr,((71/80+C)*sqr_size, (67/80+7)*sqr_size))
+        
+        self.draws_group.draw(self.image)

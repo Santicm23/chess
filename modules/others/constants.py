@@ -8,3 +8,4 @@ LGREY = (155,155,155)
 fps = 60 #frames per second
 delay = 0.2 #delay of the sound in seconds
 frames = int(fps*delay)
+color_turn = {True:WHITE, False:BLACK}

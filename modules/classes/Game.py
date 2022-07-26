@@ -1,8 +1,8 @@
 from turtle import delay
 import pygame
 
-from modules.classes.Piece import Piece, move_sound, capture_sound
-from modules.classes.Board import Board
+from modules.classes.logic.Piece import Piece, move_sound, capture_sound
+from modules.classes.esthetic.Board import Board
 from modules.others.constants import delay
 from modules.others.game_rules import move_posible, lm_castle, capture_posible, en_passant, sum_tuples
 
@@ -38,24 +38,6 @@ class Game:
         self.update(self.whites_turn)
     
     def __str__(self):
-        """+---+---+---+---+---+---+---+---+
-         8 | r | n | b | q | k | b | n | r |
-           +---+---+---+---+---+---+---+---+
-         7 | p | p | p | p | p | p | p | p |
-           +---+---+---+---+---+---+---+---+
-         6 |   |   |   |   |   |   |   |   |
-           +---+---+---+---+---+---+---+---+
-         5 |   |   |   |   |   |   |   |   |
-           +---+---+---+---+---+---+---+---+
-         4 |   |   |   |   |   |   |   |   |
-           +---+---+---+---+---+---+---+---+
-         3 |   |   |   |   |   |   |   |   |
-           +---+---+---+---+---+---+---+---+
-         2 | P | P | P | P | P | P | P | P |
-           +---+---+---+---+---+---+---+---+
-         1 | R | N | B | Q | K | B | N | R |
-           +---+---+---+---+---+---+---+---+
-             a   b   c   d   e   f   g   h  """
         ln = "  +---+---+---+---+---+---+---+---+\n"
         str_pos = '\n' + ln
         for i in range (8):
@@ -68,7 +50,6 @@ class Game:
         return str_pos + '\n'
 
     def __repr__(self):
-        """rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"""
         fencode = ""
         rc = False
         for i in range (8):
@@ -197,6 +178,7 @@ class Game:
         self.update_legal_moves()
         if self.whites_turn: self.number_moves += 1
         self.check = self.update_check()
+        print(self.check)
         print(self)
         print(repr(self))
 

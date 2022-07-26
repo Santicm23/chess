@@ -1,11 +1,10 @@
 import pygame, sys
 pygame.init()
 
-from modules.others.constants import sqr_size, fps
+from modules.others.constants import sqr_size, fps, color_turn
 screen = pygame.display.set_mode((sqr_size*8,sqr_size*8))
 
 from modules.classes.Game import Game, np
-from modules.classes.Piece import move_sound, capture_sound
 
 pygame.display.set_caption("Chess")
 pygame.display.set_icon(pygame.image.load("source/imgs/icon.png"))
@@ -55,7 +54,18 @@ while running:
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if (I,J) in piece_raised.legal_moves:
+                if piece_raised.type.isupper():
+                    game.board.move_arrow.change_arrow(color_turn[game.whites_turn],(7-piece_raised.pos[0], 7-piece_raised.pos[1]),(7-i,7-j))
+                else:
+                    game.board.move_arrow.change_arrow(color_turn[game.whites_turn],piece_raised.pos,(I,J))
                 game.move((I,J), piece_raised, screen, clock)
+                if game.check:
+                    if piece_raised.type.isupper():
+                        game.board.check_square.update((7-game.black_pieces[0].pos[0],7-game.black_pieces[0].pos[1]))
+                    else:
+                        game.board.check_square.update(game.white_pieces[0].pos)
+                else:
+                    game.board.check_square.show(False)
                 game.update(game.whites_turn)
             else:
                 pygame.mouse.set_cursor(closed_hand)
@@ -73,7 +83,18 @@ while running:
             else:
                 if not piece_raised == np:
                     if (I,J) in piece_raised.legal_moves:
+                        if piece_raised.type.isupper():
+                            game.board.move_arrow.change_arrow(color_turn[game.whites_turn],(7-piece_raised.pos[0],7-piece_raised.pos[1]),(7-i,7-j))
+                        else:
+                            game.board.move_arrow.change_arrow(color_turn[game.whites_turn],piece_raised.pos,(I,J))
                         game.move((I,J), piece_raised)
+                        if game.check:
+                            if piece_raised.type.isupper():
+                                game.board.check_square.update((7-game.black_pieces[0].pos[0],7-game.black_pieces[0].pos[1]))
+                            else:
+                                game.board.check_square.update(game.white_pieces[0].pos)
+                        else:
+                            game.board.check_square.show(False)
                     piece_raised = np
                     game.update(game.whites_turn)
                     reset(screen)
