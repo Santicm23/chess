@@ -21,7 +21,8 @@ class Board(pygame.sprite.Sprite):
         self.draws_group.add(self.move_arrow)
         self.update(pov)
     
-    def update(self, pov:bool):
+    def update(self, pov:bool, check:bool=False):
+        self.check_square.show(check)
         pygame.draw.rect(self.image, GREY, (0, 0, sqr_size*8, sqr_size*8))
         for i in range (8):
             for j in range (i%2, 8, 2):
@@ -38,5 +39,4 @@ class Board(pygame.sprite.Sprite):
             if not pov:
                 C=7-c
             self.image.blit(ltr,((71/80+C)*sqr_size, (67/80+7)*sqr_size))
-        
         self.draws_group.draw(self.image)

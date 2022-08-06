@@ -4,7 +4,7 @@ pygame.init()
 from modules.others.constants import sqr_size, fps, color_turn
 screen = pygame.display.set_mode((sqr_size*8,sqr_size*8))
 
-from modules.classes.Game import Game, np
+from modules.classes.logic.StandartMode import StandartMode, np
 
 pygame.display.set_caption("Chess")
 pygame.display.set_icon(pygame.image.load("source/imgs/icon.png"))
@@ -26,11 +26,25 @@ def reset_piece(surface:pygame.Surface, pos:tuple, piece, draw:bool=True):
         piece.draw(surface, (piece.pos[0]*sqr_size,piece.pos[1]*sqr_size), game.whites_turn)
     pygame.display.update()
 
+def movement(move_parameter, *args, **kwargs):
+    game.board.move_arrow.change_arrow(piece_raised.pos,(I,J),color=color_turn[game.whites_turn])
+    if piece_raised.type.isupper():
+        game.board.move_arrow.rotate()
+    move_parameter(*args, **kwargs)
+    if game.check:
+        if piece_raised.type.isupper():
+            game.board.check_square.update(game.black_pieces[0].pos)
+            game.board.check_square.rotate()
+        else:
+            game.board.check_square.update(game.white_pieces[0].pos)
+    game.update(game.whites_turn)
+
 running = True
 
 clock = pygame.time.Clock()
 
-game = Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+game = StandartMode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+
 reset(screen)
 pygame.mouse.set_cursor(hand)
 
@@ -38,7 +52,9 @@ print(game)
 print(repr(game))
 
 piece_raised = np
+
 draw = False
+
 game.update_legal_moves()
 
 while running:
@@ -54,19 +70,7 @@ while running:
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if (I,J) in piece_raised.legal_moves:
-                if piece_raised.type.isupper():
-                    game.board.move_arrow.change_arrow(color_turn[game.whites_turn],(7-piece_raised.pos[0], 7-piece_raised.pos[1]),(7-i,7-j))
-                else:
-                    game.board.move_arrow.change_arrow(color_turn[game.whites_turn],piece_raised.pos,(I,J))
-                game.move((I,J), piece_raised, screen, clock)
-                if game.check:
-                    if piece_raised.type.isupper():
-                        game.board.check_square.update((7-game.black_pieces[0].pos[0],7-game.black_pieces[0].pos[1]))
-                    else:
-                        game.board.check_square.update(game.white_pieces[0].pos)
-                else:
-                    game.board.check_square.show(False)
-                game.update(game.whites_turn)
+                movement(game.move, (I,J), piece_raised, surface=screen, clock=clock)
             else:
                 pygame.mouse.set_cursor(closed_hand)
                 piece_raised = np
@@ -79,32 +83,20 @@ while running:
         elif event.type == pygame.MOUSEBUTTONUP:
             draw = False
             if (I,J) == piece_raised.pos:
-                reset_piece(screen, (x,y), piece_raised, draw)
+                reset_piece(screen, (x,y), piece_raised, draw=False)
             else:
                 if not piece_raised == np:
                     if (I,J) in piece_raised.legal_moves:
-                        if piece_raised.type.isupper():
-                            game.board.move_arrow.change_arrow(color_turn[game.whites_turn],(7-piece_raised.pos[0],7-piece_raised.pos[1]),(7-i,7-j))
-                        else:
-                            game.board.move_arrow.change_arrow(color_turn[game.whites_turn],piece_raised.pos,(I,J))
-                        game.move((I,J), piece_raised)
-                        if game.check:
-                            if piece_raised.type.isupper():
-                                game.board.check_square.update((7-game.black_pieces[0].pos[0],7-game.black_pieces[0].pos[1]))
-                            else:
-                                game.board.check_square.update(game.white_pieces[0].pos)
-                        else:
-                            game.board.check_square.show(False)
-                    piece_raised = np
-                    game.update(game.whites_turn)
-                    reset(screen)
+                        movement(game.move, (I,J), piece_raised)
+                piece_raised = np
+                reset(screen)
             pygame.mouse.set_cursor(hand)
         elif event.type == pygame.MOUSEMOTION:
             if not piece_raised == np:
-                reset_piece(screen, (x,y), piece_raised, draw)
-            if not draw:
-                if (I,J) in piece_raised.legal_moves:
-                    pygame.mouse.set_cursor(default_cursor)
-                else:
-                    pygame.mouse.set_cursor(hand)
+                reset_piece(screen, (x,y), piece_raised, draw=draw)
+                if not draw:
+                    if (I,J) in piece_raised.legal_moves:
+                        pygame.mouse.set_cursor(default_cursor)
+                    else:
+                        pygame.mouse.set_cursor(hand)
     clock.tick(fps)

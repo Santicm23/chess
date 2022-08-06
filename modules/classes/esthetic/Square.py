@@ -19,6 +19,10 @@ class Square(pygame.sprite.Sprite):
             self.pos = [7-new_pos[0], 7-new_pos[1]]
         self.rect.topleft = (self.pos[0]*sqr_size,self.pos[1]*sqr_size)
         self.show(True)
+    
+    def rotate(self):
+        self.pos = [7-self.pos[0], 7-self.pos[1]]
+        self.rect.topleft = (self.pos[0]*sqr_size,self.pos[1]*sqr_size)
 
     def change_color(self, color):
         self.color = color

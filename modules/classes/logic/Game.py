@@ -1,10 +1,8 @@
-from turtle import delay
 import pygame
 
-from modules.classes.logic.Piece import Piece, move_sound, capture_sound
+from modules.classes.logic.Piece import Piece
 from modules.classes.esthetic.Board import Board
-from modules.others.constants import delay
-from modules.others.game_rules import move_posible, lm_castle, capture_posible, en_passant, sum_tuples
+from modules.others.game_rules import move_posible, capture_posible, sum_tuples
 
 np = Piece() #null piece
 
@@ -83,7 +81,7 @@ class Game:
         self.group.draw(surface)
 
     def update(self, pov:bool):
-        self.board.update(pov)
+        self.board.update(pov, self.check)
         for p in self.white_pieces + self.black_pieces:
             p.update(pov)
 
@@ -114,73 +112,6 @@ class Game:
                     break
         self.whites_turn = not self.whites_turn
         return check
-
-    def move(self, pos:list, piece:Piece, surface:pygame.Surface=None, clock=None):
-        if self.get_piece(pos) == np:
-            if piece.type.lower() == 'p':
-                self.last_cpm = 0
-                if en_passant(piece, pos, self):
-                    if piece.type == 'P':
-                        pawn = self.get_piece(sum_tuples(pos,(0,1)))
-                        self.black_pieces.pop(self.black_pieces.index(pawn)).kill()
-                    elif piece.type == 'p':
-                        pawn = self.get_piece(sum_tuples(pos,(0,-1)))
-                        self.white_pieces.pop(self.white_pieces.index(pawn)).kill()
-                    self.del_piece(pawn.pos)
-                    if not surface == None:
-                        piece.animate(surface, clock, self, pos, True)
-                    else:
-                        capture_sound.play()
-                elif not surface == None:
-                    piece.animate(surface, clock, self, pos)
-                else:
-                    move_sound.play()
-            else:
-                self.last_cpm += 1
-                if lm_castle(piece, pos, self):
-                    if pos[0] == 6:
-                        rook = self.get_piece(sum_tuples(pos,(1,0)))
-                        if not surface == None:
-                            piece.animate_castle(surface, clock, self, pos, rook, sum_tuples(pos,(-1,0)))
-                        else:
-                            move_sound.play()
-                            pygame.time.delay(int(delay*400))
-                            move_sound.play()
-                        self.set_piece(sum_tuples(pos,(-1,0)), rook)
-                    else:
-                        rook = self.get_piece(sum_tuples(pos,(-2,0)))
-                        if not surface == None:
-                            piece.animate_castle(surface, clock, self, pos, rook, sum_tuples(pos,(1,0)))
-                        else:
-                            move_sound.play()
-                            pygame.time.delay(int(delay*400))
-                            move_sound.play()
-                        self.set_piece(sum_tuples(pos,(1,0)), rook)
-                elif not surface == None:
-                    piece.animate(surface, clock, self, pos)
-                else:
-                    move_sound.play()
-        else:
-            if not surface == None:
-                piece.animate(surface, clock, self, pos)
-            else:
-                move_sound.play()
-                capture_sound.play()
-            self.last_cpm = 0
-            if self.whites_turn:
-                self.black_pieces.pop(self.black_pieces.index(self.get_piece(pos))).kill()
-            else:
-                self.white_pieces.pop(self.white_pieces.index(self.get_piece(pos))).kill()
-        self.update_right_castle(piece)
-        self.update_en_passant(pos, piece)
-        self.set_piece(pos, piece)
-        self.whites_turn = not self.whites_turn
-        self.update_legal_moves()
-        if self.whites_turn: self.number_moves += 1
-        self.check = self.update_check()
-        print(self.check)
-        print(self)
-        print(repr(self))
 
     def move_is_legal(self, pos:tuple, piece:Piece):
         t_piece = self.get_piece(pos)
@@ -228,14 +159,14 @@ class Game:
             elif piece.pos == (7,7):
                 self.right_castle['K'] = False
 
-    def update_en_passant(self, pos:list, piece:Piece):    
+    def update_en_passant(self, pos:list, piece:Piece):
         self.en_passant = None
         if piece.type == 'p' and piece.pos[1]-pos[1] == -2:
             self.en_passant = sum_tuples(piece.pos, (0,1))
         elif piece.type == 'P' and piece.pos[1]-pos[1] == 2:
             self.en_passant = sum_tuples(piece.pos, (0,-1))
 
-def fen(game:Game, fen_code:str):# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 #
+def fen(game, fen_code:str):# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 #
     fen_code = fen_code.split()
     fen_pos = fen_code[0].replace('/',' ').split()
     for i in range(len(fen_pos)):
