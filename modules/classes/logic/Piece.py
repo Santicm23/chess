@@ -1,6 +1,6 @@
 import pygame
 
-from modules.others.constants import sqr_size, WHITE, BLACK, frames, fps
+from modules.others.constants import sqr_size, frames, fps, color_turn
 
 chessfont = pygame.font.Font("source/fonts/CASEFONT.TTF", sqr_size)
 rsq = pygame.image.load("source/imgs/raised_square.png").convert_alpha() #pos where the piece was raised
@@ -11,12 +11,6 @@ cp = pygame.image.load("source/imgs/cp.png").convert_alpha() #capture posible
 move_sound = pygame.mixer.Sound("source/sounds/piece_dropped.mp3")
 capture_sound = pygame.mixer.Sound("source/sounds/piece_capturing.mp3")
 
-def get_color(type:str):
-    if type.isupper():
-        return WHITE
-    else:
-        return BLACK
-
 class Piece(pygame.sprite.Sprite):
     def __init__(self, type:str=' ', pos:list=[0,0]):
         super().__init__()
@@ -24,7 +18,7 @@ class Piece(pygame.sprite.Sprite):
         assert 0 <= pos[0] and pos[0] < 8 and 0 <= pos[1] and pos[1] < 8 and len(pos) == 2
         self.type = type
         self.pos = pos
-        self.color = get_color(self.type)
+        self.color = color_turn[self.type.isupper()]
         self.set_image()
         self.legal_moves = []
     

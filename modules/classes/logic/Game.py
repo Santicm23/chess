@@ -7,7 +7,7 @@ from modules.others.game_rules import move_posible, capture_posible, sum_tuples
 np = Piece() #null piece
 
 class Game:
-    def __init__(self, fen_code:str):
+    def __init__(self, fen_code:str): # Constructor
         self.start_fen = fen_code
         self.position = [
             [np,np,np,np,np,np,np,np],
@@ -34,7 +34,7 @@ class Game:
         for p in self.white_pieces + self.black_pieces:
             self.group.add(p)
         self.update(self.whites_turn)
-    
+
     def __str__(self):
         ln = "  +---+---+---+---+---+---+---+---+\n"
         str_pos = '\n' + ln

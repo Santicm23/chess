@@ -3,11 +3,14 @@ import pygame
 from modules.classes.logic.Game import Game, np
 from modules.classes.logic.Piece import Piece, move_sound, capture_sound
 from modules.others.constants import delay
-from modules.others.game_rules import lm_castle, en_passant, sum_tuples
+from modules.others.game_rules import move_posible, capture_posible, lm_castle, en_passant, sum_tuples
 
 class StandartMode(Game):
-    def __init__(self, fen_code:str):
+    def __init__(self, fen_code:str="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
         super().__init__(fen_code)
+    
+    def __str__(self):
+        return "\n            Classic chess:" + super().__str__()
 
     def move(self, pos:list, piece:Piece, surface:pygame.Surface=None, clock=None):
         if self.get_piece(pos) == np:
@@ -72,6 +75,5 @@ class StandartMode(Game):
         self.update_legal_moves()
         if self.whites_turn: self.number_moves += 1
         self.check = self.update_check()
-        print(self.check)
         print(self)
         print(repr(self))

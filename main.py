@@ -4,7 +4,9 @@ pygame.init()
 from modules.others.constants import sqr_size, fps, color_turn
 screen = pygame.display.set_mode((sqr_size*8,sqr_size*8))
 
-from modules.classes.logic.StandartMode import StandartMode, np
+from modules.classes.logic.game_modes.StandartMode import StandartMode, np
+# from modules.classes.logic.game_modes.Chess960Mode import Chess960Mode
+# from modules.classes.logic.game_modes.HordeMode import HordeMode
 
 pygame.display.set_caption("Chess")
 pygame.display.set_icon(pygame.image.load("source/imgs/icon.png"))
@@ -43,7 +45,9 @@ running = True
 
 clock = pygame.time.Clock()
 
-game = StandartMode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+game = StandartMode()
+# game = Chess960Mode()
+# game = HordeMode()
 
 reset(screen)
 pygame.mouse.set_cursor(hand)
