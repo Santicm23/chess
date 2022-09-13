@@ -1,9 +1,10 @@
 import pygame, sys
 pygame.init()
 
-from modules.others.constants import sqr_size, fps, color_turn
+from modules.others.constants import sqr_size, fps, color_turn, sum_tuples, scal_tuple
 screen = pygame.display.set_mode((sqr_size*8,sqr_size*8))
 
+from modules.classes.logic.Piece import chessfont
 from modules.classes.logic.game_modes.StandartMode import StandartMode, np
 # from modules.classes.logic.game_modes.Chess960Mode import Chess960Mode
 # from modules.classes.logic.game_modes.HordeMode import HordeMode
@@ -28,11 +29,11 @@ def reset_piece(surface:pygame.Surface, pos:tuple, piece, draw:bool=True):
         piece.draw(surface, (piece.pos[0]*sqr_size,piece.pos[1]*sqr_size), game.whites_turn)
     pygame.display.update()
 
-def movement(move_parameter, *args, **kwargs):
-    game.board.move_arrow.change_arrow(piece_raised.pos,(I,J),color=color_turn[game.whites_turn])
+def on_movement(move_parameter, pos, *args, **kwargs):
+    game.board.move_arrow.change_arrow(piece_raised.pos,pos,color=color_turn[game.whites_turn])
     if piece_raised.type.isupper():
         game.board.move_arrow.rotate()
-    move_parameter(*args, **kwargs)
+    move_parameter(pos, *args, **kwargs)
     if game.check:
         if piece_raised.type.isupper():
             game.board.check_square.update(game.black_pieces[0].pos)
@@ -40,6 +41,57 @@ def movement(move_parameter, *args, **kwargs):
         else:
             game.board.check_square.update(game.white_pieces[0].pos)
     game.update(game.whites_turn)
+
+def show_promotion_menu(whites_turn, pos, surface):
+    pos = scal_tuple(pos, sqr_size)
+    pygame.draw.rect(screen, color_turn[not whites_turn], (pos[0], pos[1], sqr_size, sqr_size*4))
+    surface.blit(chessfont.render('w', 1, color_turn[whites_turn]), pos)
+    surface.blit(chessfont.render('m', 1, color_turn[whites_turn]), sum_tuples(pos, (0,sqr_size)))
+    surface.blit(chessfont.render('t', 1, color_turn[whites_turn]), sum_tuples(pos, (0,2*sqr_size)))
+    surface.blit(chessfont.render('v', 1, color_turn[whites_turn]), sum_tuples(pos, (0,3*sqr_size)))
+    pygame.display.update()
+
+def set_promotion(anim=False):
+    assert piece_raised.type.lower() == 'p'
+    global promoting, promotion_pos
+    promoting = True
+    if anim:
+        piece_raised.animate(screen, clock, game, (I,J), play_sound=False)
+    else:
+        piece_raised.update(pos=(i,j))
+        reset(screen)
+    show_promotion_menu(game.whites_turn, (i,j), screen)
+    promotion_pos = (i,j)
+    piece_raised.legal_moves = []
+    if game.whites_turn:
+        piece_raised.legal_moves.append((I,0))
+        piece_raised.legal_moves.append((I,1))
+        piece_raised.legal_moves.append((I,2))
+        piece_raised.legal_moves.append((I,3))
+    else:
+        piece_raised.legal_moves.append((I,7))
+        piece_raised.legal_moves.append((I,6))
+        piece_raised.legal_moves.append((I,5))
+        piece_raised.legal_moves.append((I,4))
+
+def unset_promotion():
+    global promoting, promotion_pos
+    promoting = False
+    (a,b) = piece_raised.pos
+    piece_raised.pos = promotion_pos
+    piece_raised.animate(screen, clock, game, (a,b))
+    piece_raised.pos = (a,b)
+    game.update_piece_lm(piece_raised)
+    piece_raised.update()
+
+def play(pos, piece_raised, surface=None, clock=None):
+    global promoting
+    if promoting:
+        assert piece_raised.type.lower() == 'p'
+        on_movement(game.promote, (I,{True:0, False:7}[game.whites_turn]), piece_raised, {0:'q',1:'n',2:'r',3:'b'}[j])
+        promoting = False
+    else:
+        on_movement(game.move, pos, piece_raised, surface=surface, clock=clock)
 
 running = True
 
@@ -58,6 +110,8 @@ print(repr(game))
 piece_raised = np
 
 draw = False
+promoting = False
+promotion_pos = (0,0)
 
 game.update_legal_moves()
 
@@ -74,29 +128,41 @@ while running:
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if (I,J) in piece_raised.legal_moves:
-                movement(game.move, (I,J), piece_raised, surface=screen, clock=clock)
+                if piece_raised.type.lower() == 'p' and j==0 and not promoting:
+                    set_promotion(True)
+                else:
+                    play((I,J), piece_raised, surface=screen, clock=clock)
             else:
-                pygame.mouse.set_cursor(closed_hand)
-                piece_raised = np
                 reset(screen)
-                if not game.get_piece((I,J)) == np:
-                    pygame.mouse.set_cursor(closed_hand)
+                if promoting:
+                    unset_promotion()
+                    piece_raised = np
+                elif not game.get_piece((I,J)) == np:
                     piece_raised = game.get_piece((I,J))
                     reset_piece(screen, (x,y), piece_raised)
                     draw = True
+                else:
+                    piece_raised = np
+            pygame.mouse.set_cursor(closed_hand)
         elif event.type == pygame.MOUSEBUTTONUP:
             draw = False
             if (I,J) == piece_raised.pos:
                 reset_piece(screen, (x,y), piece_raised, draw=False)
             else:
-                if not piece_raised == np:
+                if not piece_raised == np and not promoting:
                     if (I,J) in piece_raised.legal_moves:
-                        movement(game.move, (I,J), piece_raised)
-                piece_raised = np
-                reset(screen)
+                        if piece_raised.type.lower() == 'p' and j==0 and not promoting:
+                            set_promotion()
+                        else:
+                            play((I,J), piece_raised)
+                            piece_raised = np
+                            reset(screen)
+                    else:
+                        piece_raised = np
+                        reset(screen)
             pygame.mouse.set_cursor(hand)
         elif event.type == pygame.MOUSEMOTION:
-            if not piece_raised == np:
+            if not piece_raised == np and not promoting:
                 reset_piece(screen, (x,y), piece_raised, draw=draw)
                 if not draw:
                     if (I,J) in piece_raised.legal_moves:

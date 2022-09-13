@@ -3,7 +3,7 @@ import pygame
 from modules.classes.logic.Game import Game, np
 from modules.classes.logic.Piece import Piece, move_sound, capture_sound
 from modules.others.constants import delay
-from modules.others.game_rules import move_posible, capture_posible, lm_castle, en_passant, sum_tuples
+from modules.others.game_rules import lm_castle, en_passant, sum_tuples
 
 class StandartMode(Game):
     def __init__(self, fen_code:str="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
@@ -68,6 +68,29 @@ class StandartMode(Game):
                 self.black_pieces.pop(self.black_pieces.index(self.get_piece(pos))).kill()
             else:
                 self.white_pieces.pop(self.white_pieces.index(self.get_piece(pos))).kill()
+        self.update_right_castle(piece)
+        self.update_en_passant(pos, piece)
+        self.set_piece(pos, piece)
+        self.whites_turn = not self.whites_turn
+        self.update_legal_moves()
+        if self.whites_turn: self.number_moves += 1
+        self.check = self.update_check()
+        print(self)
+        print(repr(self))
+
+    def promote(self, pos, piece:Piece, new_type:str):
+        assert piece.type.lower() == 'p'
+        piece.type = new_type
+        if self.whites_turn:
+            piece.type = piece.type.upper()
+        piece.set_image()
+        move_sound.play()
+        if not self.get_piece(pos) == np:
+            if self.whites_turn:
+                self.black_pieces.pop(self.black_pieces.index(self.get_piece(pos))).kill()
+            else:
+                self.white_pieces.pop(self.white_pieces.index(self.get_piece(pos))).kill()
+            capture_sound.play()
         self.update_right_castle(piece)
         self.update_en_passant(pos, piece)
         self.set_piece(pos, piece)

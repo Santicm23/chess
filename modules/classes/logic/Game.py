@@ -133,14 +133,17 @@ class Game:
             self.set_piece(pos, t_piece)
         return legal
 
+    def update_piece_lm(self, piece):
+        piece.legal_moves = []
+        for i in range (8):
+            for j in range(8):
+                if move_posible(piece, (i,j), self) or capture_posible(piece, (i,j), self):
+                    if self.move_is_legal((i,j), piece):
+                        piece.legal_moves.append((i,j))
+
     def update_legal_moves(self):
         for p in self.white_pieces + self.black_pieces:
-            p.legal_moves = []
-            for i in range (8):
-                for j in range(8):
-                    if move_posible(p, (i,j), self) or capture_posible(p, (i,j), self):
-                        if self.move_is_legal((i,j), p):
-                            p.legal_moves.append((i,j))
+            self.update_piece_lm(p)
 
     def update_right_castle(self, piece:Piece):
         if piece.type == 'k':
