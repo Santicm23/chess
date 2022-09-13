@@ -10,14 +10,15 @@ from pygame.locals import *
 pygame.init()
 screen = pygame.display.set_mode((640,640))
 pygame.display.set_caption("Chess")
-pygame.display.set_icon(pygame.image.load("imgs/icon.png"))
+pygame.display.set_icon(pygame.image.load("source/imgs/icon.png"))
+#changed
 
 #|   ++++   Fuentes   ++++   |#
 
 font = pygame.font.SysFont("Gerbera", 16)
 font2 = pygame.font.SysFont("Gerbera", 40)
 font3 = pygame.font.SysFont("Gerbera", 30)
-chessfont = pygame.font.Font("fonts/CASEFONT.TTF", 80)
+chessfont = pygame.font.Font("source/fonts/CASEFONT.TTF", 80)
 
 #|   ++++   Colores en RGB   ++++   |#
 
@@ -35,7 +36,7 @@ running = True #Si el progrma esta corriendo
 mode = 0 #el modo en el que esta (0: jugar, 1: analisis)
 menu = True #si esta en el menu o no
 move = False #si la pieza seleccionada tiene que moverse o el usuario la arrastro
-check=[False,None] #datos del jaque [hay jaque?, que pieza?]
+check = [False,None] #datos del jaque [hay jaque?, que pieza?]
 clock = pygame.time.Clock() #reloj de pygame
 
 fps = 60 #fotos por segundo
@@ -66,15 +67,15 @@ sqrs = []
 
 #|   ++++   Imagenes de diseño   ++++   |#
 
-r_sq = pygame.image.load("imgs/raised_square.png").convert_alpha()
-mp = pygame.image.load("imgs/mp.png").convert_alpha()
-cp = pygame.image.load("imgs/cp.png").convert_alpha()
-ms_mp = pygame.image.load("imgs/ms_mp.png").convert_alpha()
+r_sq = pygame.image.load("source/imgs/raised_square.png").convert_alpha()
+mp = pygame.image.load("source/imgs/mp.png").convert_alpha()
+cp = pygame.image.load("source/imgs/cp.png").convert_alpha()
+ms_mp = pygame.image.load("source/imgs/ms_mp.png").convert_alpha()
 
 #|   ++++   Sonidos   ++++   |#
 
-move_sound = pygame.mixer.Sound("sounds/piece_dropped.mp3")
-capture_sound = pygame.mixer.Sound("sounds/piece_capturing.mp3")
+move_sound = pygame.mixer.Sound("source/sounds/piece_dropped.mp3")
+capture_sound = pygame.mixer.Sound("source/sounds/piece_capturing.mp3")
 
 #|   ++++   Variables principales   ++++   |#
 
@@ -1039,9 +1040,6 @@ k2_img = chessfont.render('k', 1, WHITE)
 images = [P_img,p_img,N_img,n_img,B_img,b_img,R_img,r_img,Q_img,q_img,K_img,k_img] #lista de imagenes
 
 types = ['p','n','b','r','q','k'] #tipos de piezas
-imgtypes = ['o','m','v','t','w','l'] #tipos de imagenes
-
-brd = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" #Codigo FEN de la posición inicial del ajedrez
 
 Wpieces = [] #lista de piezas blancas
 Bpieces = [] #lista de piezas negras
@@ -1049,7 +1047,7 @@ Pieces = [] #lista de todas las piezas (de la posicion inicial)
 K = 0 #rey blanco
 k = 0 #rey negro
 
-board = Board(brd) #tablero
+board = Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") #tablero a partir del codigo FEN
 lines = ['8','7','6','5','4','3','2','1'] #filas (al revez para la impresión)
 columnes = ['a','b','c','d','e','f','g','h'] #columnas
 
