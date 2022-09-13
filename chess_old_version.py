@@ -11,6 +11,7 @@ pygame.init()
 screen = pygame.display.set_mode((640,640))
 pygame.display.set_caption("Chess")
 pygame.display.set_icon(pygame.image.load("source/imgs/icon.png"))
+#changed
 
 #|   ++++   Fuentes   ++++   |#
 
