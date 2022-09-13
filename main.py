@@ -4,7 +4,7 @@ pygame.init()
 from modules.others.constants import sqr_size, fps, color_turn, sum_tuples, scal_tuple
 screen = pygame.display.set_mode((sqr_size*8,sqr_size*8))
 
-from modules.classes.logic.Piece import chessfont
+from modules.classes.logic.Piece import Piece, chessfont
 from modules.classes.logic.game_modes.StandartMode import StandartMode, np
 # from modules.classes.logic.game_modes.Chess960Mode import Chess960Mode
 # from modules.classes.logic.game_modes.HordeMode import HordeMode
@@ -29,7 +29,7 @@ def reset_piece(surface:pygame.Surface, pos:tuple, piece, draw:bool=True):
         piece.draw(surface, (piece.pos[0]*sqr_size,piece.pos[1]*sqr_size), game.whites_turn)
     pygame.display.update()
 
-def on_movement(move_parameter, pos, *args, **kwargs):
+def on_movement(move_parameter, pos:tuple, *args, **kwargs):
     game.board.move_arrow.change_arrow(piece_raised.pos,pos,color=color_turn[game.whites_turn])
     if piece_raised.type.isupper():
         game.board.move_arrow.rotate()
@@ -42,7 +42,7 @@ def on_movement(move_parameter, pos, *args, **kwargs):
             game.board.check_square.update(game.white_pieces[0].pos)
     game.update(game.whites_turn)
 
-def show_promotion_menu(whites_turn, pos, surface):
+def show_promotion_menu(whites_turn:bool, pos:tuple, surface:pygame.Surface):
     pos = scal_tuple(pos, sqr_size)
     pygame.draw.rect(screen, color_turn[not whites_turn], (pos[0], pos[1], sqr_size, sqr_size*4))
     surface.blit(chessfont.render('w', 1, color_turn[whites_turn]), pos)
@@ -51,7 +51,7 @@ def show_promotion_menu(whites_turn, pos, surface):
     surface.blit(chessfont.render('v', 1, color_turn[whites_turn]), sum_tuples(pos, (0,3*sqr_size)))
     pygame.display.update()
 
-def set_promotion(anim=False):
+def set_promotion(anim:bool):
     assert piece_raised.type.lower() == 'p'
     global promoting, promotion_pos
     promoting = True
@@ -75,20 +75,21 @@ def set_promotion(anim=False):
         piece_raised.legal_moves.append((I,4))
 
 def unset_promotion():
-    global promoting, promotion_pos
+    global promoting
     promoting = False
     (a,b) = piece_raised.pos
     piece_raised.pos = promotion_pos
+    game.del_piece((a,b)) #the animation has to think that there is no piece to not play the capture sound
     piece_raised.animate(screen, clock, game, (a,b))
     piece_raised.pos = (a,b)
+    game.set_piece((a,b), piece_raised)
     game.update_piece_lm(piece_raised)
-    piece_raised.update()
 
-def play(pos, piece_raised, surface=None, clock=None):
+def play(pos:tuple, piece_raised:Piece, surface=None, clock=None):
     global promoting
     if promoting:
         assert piece_raised.type.lower() == 'p'
-        on_movement(game.promote, (I,{True:0, False:7}[game.whites_turn]), piece_raised, {0:'q',1:'n',2:'r',3:'b'}[j])
+        on_movement(game.promote, (I,(7,0)[game.whites_turn]), piece_raised, ('q','n','r','b')[j])
         promoting = False
     else:
         on_movement(game.move, pos, piece_raised, surface=surface, clock=clock)
@@ -102,7 +103,7 @@ game = StandartMode()
 # game = HordeMode()
 
 reset(screen)
-pygame.mouse.set_cursor(hand)
+pygame.mouse.set_cursor(*hand)
 
 print(game)
 print(repr(game))
@@ -143,7 +144,7 @@ while running:
                     draw = True
                 else:
                     piece_raised = np
-            pygame.mouse.set_cursor(closed_hand)
+            pygame.mouse.set_cursor(*closed_hand)
         elif event.type == pygame.MOUSEBUTTONUP:
             draw = False
             if (I,J) == piece_raised.pos:
@@ -152,7 +153,7 @@ while running:
                 if not piece_raised == np and not promoting:
                     if (I,J) in piece_raised.legal_moves:
                         if piece_raised.type.lower() == 'p' and j==0 and not promoting:
-                            set_promotion()
+                            set_promotion(False)
                         else:
                             play((I,J), piece_raised)
                             piece_raised = np
@@ -160,13 +161,13 @@ while running:
                     else:
                         piece_raised = np
                         reset(screen)
-            pygame.mouse.set_cursor(hand)
+            pygame.mouse.set_cursor(*hand)
         elif event.type == pygame.MOUSEMOTION:
             if not piece_raised == np and not promoting:
                 reset_piece(screen, (x,y), piece_raised, draw=draw)
                 if not draw:
                     if (I,J) in piece_raised.legal_moves:
-                        pygame.mouse.set_cursor(default_cursor)
+                        pygame.mouse.set_cursor(*default_cursor)
                     else:
-                        pygame.mouse.set_cursor(hand)
+                        pygame.mouse.set_cursor(*hand)
     clock.tick(fps)

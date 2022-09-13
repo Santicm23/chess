@@ -10,7 +10,9 @@ WHITE = (255,255,255)
 BLACK = (0,0,0)
 GREY = (125,125,125)
 LGREY = (155,155,155)
-color_turn = {True:WHITE, False:BLACK}
+color_turn = (BLACK, WHITE)
+
+# --- lambda fonctions --- #
 
 valid_pos = lambda pos: 0<=pos[0] and pos[0]<8 and 0<=pos[1] and pos[1]<8
 sum_tuples = lambda p1, p2: (p1[0]+p2[0],p1[1]+p2[1])
