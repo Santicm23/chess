@@ -1,15 +1,16 @@
-from modules.others.constants import valid_pos, sum_tuples
+import numpy as np
+from modules.others.constants import valid_pos
 
 def lm_pawn(piece, new_pos, game):
     if game.whites_turn:
-        if new_pos == sum_tuples(piece.pos, (0,-1)):
+        if (new_pos == piece.pos-(0,1)).all():
             return True
-        if piece.pos[1] >= 6 and new_pos == (piece.pos[0],piece.pos[1]-2) and game.get_piece((piece.pos[0],5)).type == ' ':
+        if piece.pos[1] >= 6 and (new_pos == piece.pos-(0,2)).all() and game.get_piece((piece.pos[0],5)).type == ' ':
             return True
     else:
-        if new_pos == sum_tuples(piece.pos, (0,1)):
+        if (new_pos == piece.pos+(0,1)).all():
             return True
-        if piece.pos[1] <= 1 and new_pos == (piece.pos[0],piece.pos[1]+2) and game.get_piece((piece.pos[0],2)).type == ' ':
+        if piece.pos[1] <= 1 and (new_pos == piece.pos+(0,2)).all() and game.get_piece((piece.pos[0],2)).type == ' ':
             return True
     return False
 def lmc_knight(piece, new_pos):
@@ -25,17 +26,17 @@ def lmc_knight(piece, new_pos):
                     b=b*-1
                 if k2 == 0:
                     a=a*-1
-                if new_pos == sum_tuples(piece.pos, (a,b)):
+                if (new_pos == piece.pos + (a,b)).all():
                     return True
     return False
 def lmc_bishop(piece, new_pos, game):
     for c in range (-1,2,2):
         for d in range (-1,2,2):
             q=1
-            while valid_pos(sum_tuples(piece.pos, (q*c,q*d))):
-                if new_pos == sum_tuples(piece.pos, (q*c,q*d)):
+            while valid_pos(piece.pos + np.array([c,d])*q):
+                if (new_pos == piece.pos + np.array([c,d])*q).all():
                     return True
-                if not game.get_piece(sum_tuples(piece.pos, (q*c,q*d))).type == ' ':
+                if not game.get_piece(piece.pos + np.array([c,d])*q).type == ' ':
                     break
                 q+=1
     return False
@@ -50,10 +51,10 @@ def lmc_rook(piece, new_pos, game):
         else:
             (a,b)=(0,-1)
         q=1
-        while valid_pos(sum_tuples(piece.pos, (q*a,q*b))):
-            if new_pos == sum_tuples(piece.pos, (q*a,q*b)):
+        while valid_pos(piece.pos + np.array([a,b])*q):
+            if (new_pos == piece.pos + np.array([a,b])*q).all():
                 return True
-            if not game.get_piece(sum_tuples(piece.pos, (q*a,q*b))).type == ' ':
+            if not game.get_piece(piece.pos + np.array([a,b])*q).type == ' ':
                 break
             q+=1
     return False
@@ -61,17 +62,17 @@ def lmc_queen(piece, new_pos, game):
     for c in range (-1,2):
         for d in range (-1,2):
             q=1
-            while valid_pos(sum_tuples(piece.pos, (q*c,q*d))):
-                if new_pos == sum_tuples(piece.pos, (q*c,q*d)):
+            while valid_pos(piece.pos + np.array([c,d])*q):
+                if (new_pos == piece.pos + np.array([c,d])*q).all():
                     return True
-                if not game.get_piece(sum_tuples(piece.pos, (q*c,q*d))).type == ' ':
+                if not game.get_piece(piece.pos + np.array([c,d])*q).type == ' ':
                     break
                 q+=1
     return False
 def lmc_king(piece, new_pos):
     for c in range (-1,2):
         for d in range (-1,2):
-            if new_pos == sum_tuples(piece.pos, (c,d)):
+            if (new_pos == piece.pos + (c,d)).all():
                 return True
     return False
 def lm_castle(piece, new_pos, game):#to modify
@@ -99,14 +100,14 @@ def lm_castle(piece, new_pos, game):#to modify
             #                 if game.get_piece((2,0)).type == ' ' or (2,0) == new_pos or (2,0) == piece.pos:
             #                     return True
             pass
-        elif new_pos == sum_tuples(piece.pos, (2,0)):
+        elif (new_pos == piece.pos + (2,0)).all():
             if game.right_castle['K']:
                 if move_posible(game.get_piece((7,7)), (5,7), game):
                     return True
             if game.right_castle['k']:
                 if move_posible(game.get_piece((7,0)), (5,0), game):
                     return True
-        elif new_pos == sum_tuples(piece.pos, (-2,0)):
+        elif (new_pos == piece.pos - (2,0)).all():
             if game.right_castle['Q']:
                 if move_posible(game.get_piece((0,7)), (3,7), game):
                     return True
@@ -115,6 +116,7 @@ def lm_castle(piece, new_pos, game):#to modify
                     return True
     return False
 def move_posible(piece, new_pos, game):
+    new_pos = np.array(new_pos)
     if piece.type.isupper() == game.whites_turn:
         if piece.type.lower() == 'k' and lm_castle(piece, new_pos, game):
             return True
@@ -141,10 +143,11 @@ def lc_pawn(piece, new_pos, game):
             return True
     return False
 def en_passant(piece, new_pos, game):
-    if lc_pawn(piece, new_pos, game) and new_pos == game.en_passant:
+    if lc_pawn(piece, new_pos, game) and (new_pos == game.en_passant).all():
         return True
     return False
 def capture_posible(piece, new_pos, game):
+    new_pos = np.array(new_pos)
     if piece.type.isupper() == game.whites_turn:
         if game.get_piece(new_pos).type == ' ':
             if piece.type.lower() == 'p':

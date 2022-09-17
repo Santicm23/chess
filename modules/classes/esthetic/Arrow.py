@@ -1,19 +1,20 @@
 import pygame
+import numpy as np
 
 from modules.others.constants import sqr_size
 
 class Arrow(pygame.sprite.Sprite):
-    def __init__(self, color:tuple, bottom:list=[0,0], top:list=[0,0]):
+    def __init__(self, color:tuple, bottom:np.array=np.array([0,0]), top:np.array=np.array([0,0])):
         super().__init__()
         self.image = pygame.image.load("source/imgs/bg_arrow.png").convert_alpha()
         self.rect = self.image.get_rect()
         self.change_arrow(bottom, top, color=color, show=False)
 
-    def change_arrow(self, bottom:list, top:list, color:tuple=None, show=True):
+    def change_arrow(self, bottom:np.array, top:np.array, color:tuple=None, show=True):
         if not color == None:
             self.color = color
-        self.bottom = bottom
-        self.top = top
+        self.bottom = np.array(bottom)
+        self.top = np.array(top)
         self.image = pygame.image.load("source/imgs/bg_arrow.png").convert_alpha()
         self.show(show)
         self.update()
@@ -22,7 +23,7 @@ class Arrow(pygame.sprite.Sprite):
         self.color = color
 
     def rotate(self):
-        self.change_arrow([7-self.bottom[0],7-self.bottom[1]],[7-self.top[0],7-self.top[1]])
+        self.change_arrow(7-self.bottom,7-self.top)
 
     def show(self, b:bool):
         if b:
@@ -31,7 +32,7 @@ class Arrow(pygame.sprite.Sprite):
             self.image.set_alpha(0)
 
     def update(self):
-        if self.bottom == self.top: return None
+        if (self.bottom == self.top).all(): return None
         (ax,ay) = ((self.bottom[0]+0.5)*sqr_size,(self.bottom[1]+0.5)*sqr_size)
         (bx,by) = ((self.top[0]+0.5)*sqr_size,(self.top[1]+0.5)*sqr_size)
         vec = (ax-bx,ay-by)

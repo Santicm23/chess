@@ -1,9 +1,10 @@
 import pygame
+import numpy as np
 
 from modules.others.constants import sqr_size
 
 class Square(pygame.sprite.Sprite):
-    def __init__(self, color:tuple=(205,92,92), pos:list=[0,0]):
+    def __init__(self, color:tuple=(205,92,92), pos:np.array=np.array([0,0])):
         super().__init__()
         self.color = color
         self.pos = pos
@@ -12,17 +13,17 @@ class Square(pygame.sprite.Sprite):
         self.show(False)
         self.rect = self.image.get_rect(topleft = (self.pos[0]*sqr_size,self.pos[1]*sqr_size))
 
-    def update(self, new_pos:tuple, pov:bool=True):
+    def update(self, new_pos:np.array, pov:bool=True):
         if pov:
-            self.pos = new_pos
+            self.pos = np.array(new_pos)
         else:
-            self.pos = [7-new_pos[0], 7-new_pos[1]]
-        self.rect.topleft = (self.pos[0]*sqr_size,self.pos[1]*sqr_size)
+            self.pos = 7-np.array(new_pos)
+        self.rect.topleft = self.pos*sqr_size
         self.show(True)
     
     def rotate(self):
-        self.pos = [7-self.pos[0], 7-self.pos[1]]
-        self.rect.topleft = (self.pos[0]*sqr_size,self.pos[1]*sqr_size)
+        self.pos = 7-self.pos
+        self.rect.topleft = self.pos*sqr_size
 
     def change_color(self, color):
         self.color = color

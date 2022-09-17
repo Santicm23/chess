@@ -1,24 +1,16 @@
 import pygame
+import numpy as np
 
 from modules.classes.logic.Piece import Piece
 from modules.classes.esthetic.Board import Board
-from modules.others.game_rules import move_posible, capture_posible, sum_tuples
+from modules.others.game_rules import move_posible, capture_posible
 
-np = Piece() #null piece
+gp = Piece() #gap piece
 
 class Game:
     def __init__(self, fen_code:str): # Constructor
         self.start_fen = fen_code
-        self.position = [
-            [np,np,np,np,np,np,np,np],
-            [np,np,np,np,np,np,np,np],
-            [np,np,np,np,np,np,np,np],
-            [np,np,np,np,np,np,np,np],
-            [np,np,np,np,np,np,np,np],
-            [np,np,np,np,np,np,np,np],
-            [np,np,np,np,np,np,np,np],
-            [np,np,np,np,np,np,np,np]
-        ]
+        self.position = np.full((8,8), gp)
         self.white_pieces = []
         self.black_pieces = []
         self.whites_turn = True
@@ -41,7 +33,7 @@ class Game:
         for i in range (8):
             str_pos += str(7-i+1) + ' |'
             for j in range (8):
-                str_pos += ' ' + self.position[i][j].type + ' |'
+                str_pos += ' ' + self.position[i,j].type + ' |'
             str_pos += '\n'
             str_pos += ln
         str_pos += "    a   b   c   d   e   f   g   h"
@@ -85,17 +77,17 @@ class Game:
         for p in self.white_pieces + self.black_pieces:
             p.update(pov)
 
-    def get_piece(self, pos:tuple):
-        return self.position[pos[1]][pos[0]]
+    def get_piece(self, pos:np.ndarray):
+        return self.position[pos[1],pos[0]]
 
-    def set_piece(self, pos:tuple, piece:Piece):
+    def set_piece(self, pos:np.array, piece:Piece):
         self.del_piece(piece.pos)
-        piece.pos = pos
+        piece.pos = np.array(pos)
         piece.update()
-        self.position[pos[1]][pos[0]] = piece
+        self.position[pos[1],pos[0]] = piece
 
-    def del_piece(self, pos:tuple):
-        self.position[pos[1]][pos[0]] = np
+    def del_piece(self, pos:np.ndarray):
+        self.position[pos[1],pos[0]] = gp
 
     def update_check(self):
         check = False
@@ -113,7 +105,7 @@ class Game:
         self.whites_turn = not self.whites_turn
         return check
 
-    def move_is_legal(self, pos:tuple, piece:Piece):
+    def move_is_legal(self, pos:np.ndarray, piece:Piece):
         t_piece = self.get_piece(pos)
         t_pos = piece.pos
         self.set_piece(pos, piece)
@@ -129,7 +121,7 @@ class Game:
                 legal = not self.update_check()
                 self.black_pieces.append(t_piece)
         self.set_piece(t_pos, piece)
-        if not t_piece == np:
+        if not t_piece == gp:
             self.set_piece(pos, t_piece)
         return legal
 
@@ -139,7 +131,7 @@ class Game:
             for j in range(8):
                 if move_posible(piece, (i,j), self) or capture_posible(piece, (i,j), self):
                     if self.move_is_legal((i,j), piece):
-                        piece.legal_moves.append((i,j))
+                        piece.legal_moves.append(np.array([i,j]))
 
     def update_legal_moves(self):
         for p in self.white_pieces + self.black_pieces:
@@ -153,21 +145,21 @@ class Game:
             self.right_castle['K'] = False
             self.right_castle['Q'] = False
         elif piece.type.lower() == 'r':
-            if piece.pos == (0,0):
+            if (piece.pos == (0,0)).all():
                 self.right_castle['q'] = False
-            elif piece.pos == (0,7):
+            elif (piece.pos == (0,7)).all():
                 self.right_castle['Q'] = False
-            elif piece.pos == (7,0):
+            elif (piece.pos == (7,0)).all():
                 self.right_castle['k'] = False
-            elif piece.pos == (7,7):
+            elif( piece.pos == (7,7)).all():
                 self.right_castle['K'] = False
 
-    def update_en_passant(self, pos:list, piece:Piece):
+    def update_en_passant(self, pos:np.ndarray, piece:Piece):
         self.en_passant = None
         if piece.type == 'p' and piece.pos[1]-pos[1] == -2:
-            self.en_passant = sum_tuples(piece.pos, (0,1))
+            self.en_passant = piece.pos + (0,1)
         elif piece.type == 'P' and piece.pos[1]-pos[1] == 2:
-            self.en_passant = sum_tuples(piece.pos, (0,-1))
+            self.en_passant = piece.pos + (0,-1)
 
 def fen(game, fen_code:str):# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 #
     fen_code = fen_code.split()
@@ -176,8 +168,8 @@ def fen(game, fen_code:str):# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq
         k = 0
         for j in fen_pos[i]:
             if j.isalpha():
-                p = Piece(j, (k,i))
-                game.position[i][k] = p
+                p = Piece(j, np.array([k,i]))
+                game.position[i,k] = p
                 if j.isupper():
                     if j == 'K':
                         game.white_pieces = [p] + game.white_pieces
