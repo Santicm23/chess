@@ -1,7 +1,7 @@
 # --- constants --- #
 
 sqr_size = 80 #square size
-fps = 60 #frames per second
+fps = 120 #frames per second
 delay = 0.2 #sound delay in seconds
 frames = int(fps*delay)
 

@@ -4,6 +4,7 @@ pygame.init()
 
 from modules.others.constants import sqr_size, fps, color_turn
 screen = pygame.display.set_mode((sqr_size*8,sqr_size*8))
+# screen = pygame.display.set_mode((sqr_size*8,sqr_size*8), pygame.RESIZABLE)
 
 from modules.classes.logic.Piece import Piece, chessfont
 from modules.classes.logic.game_modes.StandartMode import StandartMode, gp

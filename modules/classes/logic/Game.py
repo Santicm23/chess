@@ -45,13 +45,13 @@ class Game:
         for i in range (8):
             ctr = 0
             for j in range (8):
-                if self.position[i][j].type == ' ':
+                if self.position[i,j].type == ' ':
                     ctr += 1
                 else:
                     if ctr > 0:
                         fencode += str(ctr)
                         ctr = 0
-                    fencode += self.position[i][j].type
+                    fencode += self.position[i,j].type
             if ctr > 0:
                 fencode += str(ctr)
             if i<7:
