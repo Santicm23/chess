@@ -5,3 +5,4 @@ This proyect is just for fun, I would like to learn with it, not only more about
 
 ## Right now
 
+Im refactoring this hole proyect in another repo [chess-on-console](https://github.com/Santicm23/chess-on-console)
